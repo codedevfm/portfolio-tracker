@@ -1,0 +1,31 @@
+<nav class="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between h-16 items-center">
+      <div class="flex space-x-8">
+        <a href="/index.html" class="nav-link text-gray-500 hover:text-blue-600 text-sm font-medium">Dashboard</a>
+        <a href="/journal.html" class="nav-link text-gray-500 hover:text-blue-600 text-sm font-medium">Journal</a>
+        <a href="/performance.html" class="nav-link text-gray-500 hover:text-blue-600 text-sm font-medium">Performance</a>
+      </div>
+      <!-- Optional: Logo or toggle here -->
+    </div>
+  </div>
+</nav>
+
+<style>
+  .nav-link.active {
+    color: #2563EB; /* Tailwind blue-600 */
+    font-weight: 600;
+    border-bottom: 2px solid #2563EB;
+  }
+</style>
+
+<script>
+  // Add 'active' class to the matching nav item
+  const current = window.location.pathname.split("/").pop();
+  document.querySelectorAll(".nav-link").forEach(link => {
+    const href = link.getAttribute("href").split("/").pop();
+    if (href === current || (href === "index.html" && current === "")) {
+      link.classList.add("active");
+    }
+  });
+</script>

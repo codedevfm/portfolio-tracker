@@ -1,53 +1,21 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Sidebar with Toggle</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    #sidebar.collapsed {
-      transform: translateX(-100%) !important;
-    }
-  </style>
 </head>
-<body class="bg-gray-100">
-
-  <!-- Toggle Button -->
-  <button id="sidebarToggle" 
-          class="fixed top-4 left-4 z-50 p-2 rounded-md bg-white shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:hidden"
-          aria-label="Toggle Sidebar">
-    <!-- Hamburger icon (Heroicons) -->
-    <svg class="h-6 w-6 text-gray-700" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" >
-      <line x1="3" y1="12" x2="21" y2="12" />
-      <line x1="3" y1="6" x2="21" y2="6" />
-      <line x1="3" y1="18" x2="21" y2="18" />
-    </svg>
-  </button>
-
-  <!-- Sidebar -->
-  <aside id="sidebar" class="fixed top-0 left-0 z-40 w-64 h-full pt-20 bg-white border-r border-gray-200 transition-transform transform sm:translate-x-0">
-    <nav class="flex flex-col space-y-2 px-4">
-      <a href="#" class="py-2 px-3 rounded hover:bg-indigo-100">Dashboard</a>
-      <a href="#" class="py-2 px-3 rounded hover:bg-indigo-100">Journal</a>
-      <a href="#" class="py-2 px-3 rounded hover:bg-indigo-100">Performance</a>
-      <a href="#" class="py-2 px-3 rounded hover:bg-indigo-100">Stock Info</a>
-    </nav>
-  </aside>
-
-  <!-- Main content -->
-  <main class="ml-0 sm:ml-64 p-8">
-    <h1 class="text-3xl font-bold">Main Content Area</h1>
-    <p>Put your page content here.</p>
+<body class="pt-16 bg-gray-50">
+  <main class="max-w-4xl mx-auto p-4">
+    <h1 class="text-3xl font-bold mb-4">Dashboard</h1>
+    <p>Portfolio Dashboard Overview (Coming Soon)</p>
   </main>
 
   <script>
-    const sidebar = document.getElementById('sidebar');
-    const toggleBtn = document.getElementById('sidebarToggle');
-
-    toggleBtn.addEventListener('click', () => {
-      sidebar.classList.toggle('collapsed');
-    });
+    fetch('/partials/navbar.html')
+      .then(res => res.text())
+      .then(html => document.body.insertAdjacentHTML('afterbegin', html));
   </script>
 </body>
 </html>
