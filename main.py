@@ -1,9 +1,9 @@
-from fastapi import FastAPI, Form
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, Form, Request
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
-from fastapi.requests import Request
 from supabase import create_client, Client
 import os
+import yfinance as yf
 
 app = FastAPI()
 
@@ -16,27 +16,44 @@ templates = Jinja2Templates(directory="templates")
 
 @app.get("/", response_class=HTMLResponse)
 async def root(request: Request):
-    return templates.TemplateResponse("base.html", {"request": request})
+    # Default to journal view on root
+    journal = supabase.table("journal").select("*").order("buy_date", desc=True).execute().data
+    return templates.TemplateResponse("base.html", {"request": request, "initial_content": "journal", "journal": journal})
+
 
 @app.get("/journal", response_class=HTMLResponse)
 async def get_journal(request: Request):
     journal = supabase.table("journal").select("*").order("buy_date", desc=True).execute().data
     return templates.TemplateResponse("partials/journal.html", {"request": request, "journal": journal})
 
-@app.post("/journal", response_class=HTMLResponse)
-async def add_entry(request: Request,
-                    symbol: str = Form(...),
-                    buy_date: str = Form(...),
-                    buy_price: float = Form(...),
-                    quantity: float = Form(...)):
-    supabase.table("journal").insert({
-        "id": str(uuid.uuid4()),
-        "symbol": symbol.upper(),
-        "buy_date": buy_date,
-        "buy_price": buy_price,
-        "quantity": quantity
-    }).execute()
-    return await get_journal(request)
+
+@app.post("/journal/edit")
+async def journal_edit(
+    id: str = Form(None),
+    symbol: str = Form(...),
+    buy_date: str = Form(...),
+    buy_price: float = Form(...),
+    quantity: float = Form(...),
+):
+    symbol = symbol.upper()
+    if id:
+        # update existing entry
+        res = supabase.table("journal").update({
+            "symbol": symbol,
+            "buy_date": buy_date,
+            "buy_price": buy_price,
+            "quantity": quantity,
+        }).eq("id", id).execute()
+    else:
+        # insert new entry
+        res = supabase.table("journal").insert({
+            "symbol": symbol,
+            "buy_date": buy_date,
+            "buy_price": buy_price,
+            "quantity": quantity,
+        }).execute()
+    return JSONResponse({"status": "ok"})
+
 
 @app.get("/holdings", response_class=HTMLResponse)
 async def get_holdings(request: Request):
