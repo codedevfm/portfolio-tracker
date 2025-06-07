@@ -1,90 +1,53 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full bg-gray-100">
+<html lang="en" class="scroll-smooth">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Portfolio App</title>
+  <title>Sidebar with Toggle</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.7.0/flowbite.min.css" rel="stylesheet" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.7.0/flowbite.min.js"></script>
+  <style>
+    #sidebar.collapsed {
+      transform: translateX(-100%) !important;
+    }
+  </style>
 </head>
-<body class="h-full flex">
+<body class="bg-gray-100">
+
+  <!-- Toggle Button -->
+  <button id="sidebarToggle" 
+          class="fixed top-4 left-4 z-50 p-2 rounded-md bg-white shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:hidden"
+          aria-label="Toggle Sidebar">
+    <!-- Hamburger icon (Heroicons) -->
+    <svg class="h-6 w-6 text-gray-700" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" >
+      <line x1="3" y1="12" x2="21" y2="12" />
+      <line x1="3" y1="6" x2="21" y2="6" />
+      <line x1="3" y1="18" x2="21" y2="18" />
+    </svg>
+  </button>
 
   <!-- Sidebar -->
-  <aside id="sidebar" class="fixed top-0 left-0 z-40 w-64 h-full pt-20 transition-transform transform -translate-x-full sm:translate-x-0 bg-white border-r border-gray-200" aria-label="Sidebar">
-    <div class="px-3 pb-4 overflow-y-auto h-full">
-      <ul class="space-y-2 font-medium">
-        <li>
-          <a href="#" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100">
-            <!-- Home icon -->
-            <svg class="w-6 h-6 text-gray-500 transition duration-75" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M3 9.75L12 4.5l9 5.25v8.25a2.25 2.25 0 01-2.25 2.25h-13.5A2.25 2.25 0 013 18V9.75z" />
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 22.5v-6h6v6" />
-            </svg>
-            <span class="ml-3">Dashboard</span>
-          </a>
-        </li>
-        <li>
-          <a href="#" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100">
-            <!-- Book open icon -->
-            <svg class="w-6 h-6 text-gray-500 transition duration-75" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 20.25c-3.33 0-6-2.345-6-5.25 0-2.262 1.172-4.1 2.883-4.956m6.234 0A6.744 6.744 0 0118 14.75c0 2.905-2.67 5.25-6 5.25z" />
-              <path stroke-linecap="round" stroke-linejoin="round" d="M6 4.5h12v15H6z" />
-            </svg>
-            <span class="ml-3">Journal</span>
-          </a>
-        </li>
-        <li>
-          <a href="#" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100">
-            <!-- Chart bar icon -->
-            <svg class="w-6 h-6 text-gray-500 transition duration-75" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M3 17.25v-8.5a.75.75 0 011.5 0v8.5a.75.75 0 01-1.5 0zM8.25 17.25v-12a.75.75 0 011.5 0v12a.75.75 0 01-1.5 0zM13.5 17.25v-6.75a.75.75 0 011.5 0v6.75a.75.75 0 01-1.5 0zM18.75 17.25v-3a.75.75 0 011.5 0v3a.75.75 0 01-1.5 0z" />
-            </svg>
-            <span class="ml-3">Performance</span>
-          </a>
-        </li>
-        <li>
-          <a href="#" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100">
-            <!-- Information circle icon -->
-            <svg class="w-6 h-6 text-gray-500 transition duration-75" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 12h-3m0-3h.01M12 19.5a7.5 7.5 0 110-15 7.5 7.5 0 010 15z" />
-            </svg>
-            <span class="ml-3">Stock Info</span>
-          </a>
-        </li>
-      </ul>
-    </div>
+  <aside id="sidebar" class="fixed top-0 left-0 z-40 w-64 h-full pt-20 bg-white border-r border-gray-200 transition-transform transform sm:translate-x-0">
+    <nav class="flex flex-col space-y-2 px-4">
+      <a href="#" class="py-2 px-3 rounded hover:bg-indigo-100">Dashboard</a>
+      <a href="#" class="py-2 px-3 rounded hover:bg-indigo-100">Journal</a>
+      <a href="#" class="py-2 px-3 rounded hover:bg-indigo-100">Performance</a>
+      <a href="#" class="py-2 px-3 rounded hover:bg-indigo-100">Stock Info</a>
+    </nav>
   </aside>
 
   <!-- Main content -->
-  <div class="flex flex-col flex-1 min-h-screen">
-    <!-- Header -->
-    <header class="flex items-center justify-between bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-30">
-      <button id="sidebarToggle" aria-label="Toggle sidebar" class="text-gray-500 focus:outline-none">
-        <!-- Hamburger icon -->
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" >
-          <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-        </svg>
-      </button>
-      <h1 class="text-xl font-semibold text-gray-900">Portfolio App</h1>
-      <div></div>
-    </header>
-
-    <!-- Page content -->
-    <main class="flex-1 p-6 bg-gray-100">
-      <h2 class="text-2xl font-semibold mb-4">Dashboard (Coming Soon)</h2>
-      <p>Welcome! Use the sidebar to navigate your portfolio.</p>
-    </main>
-  </div>
+  <main class="ml-0 sm:ml-64 p-8">
+    <h1 class="text-3xl font-bold">Main Content Area</h1>
+    <p>Put your page content here.</p>
+  </main>
 
   <script>
     const sidebar = document.getElementById('sidebar');
     const toggleBtn = document.getElementById('sidebarToggle');
 
     toggleBtn.addEventListener('click', () => {
-      sidebar.classList.toggle('-translate-x-full');
+      sidebar.classList.toggle('collapsed');
     });
   </script>
-
 </body>
 </html>
