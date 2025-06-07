@@ -1,0 +1,29 @@
+<!-- templates/partials/holdings.html -->
+<h1>Current Holdings</h1>
+
+<table>
+    <thead>
+        <tr>
+            <th>Symbol</th>
+            <th>Total Qty</th>
+            <th>Avg Buy Price</th>
+            <th>Current Price</th>
+            <th>Market Value</th>
+            <th>P&amp;L</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for holding in holdings %}
+        <tr>
+            <td>{{ holding.symbol }}</td>
+            <td>{{ holding.total_quantity }}</td>
+            <td>${{ "%.2f"|format(holding.avg_buy_price) }}</td>
+            <td>${{ "%.2f"|format(holding.current_price) }}</td>
+            <td>${{ "%.2f"|format(holding.market_value) }}</td>
+            <td style="color: {% if holding.pnl >= 0 %}green{% else %}red{% endif %};">
+                ${{ "%.2f"|format(holding.pnl) }}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

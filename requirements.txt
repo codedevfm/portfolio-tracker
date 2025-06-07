@@ -5,3 +5,4 @@ python-dotenv
 supabase
 yfinance
 python-multipart
+pandas

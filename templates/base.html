@@ -1,0 +1,53 @@
+<!-- templates/base.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>Portfolio Tracker</title>
+    <script src="https://unpkg.com/htmx.org@1.9.5"></script>
+    <link rel="stylesheet" href="https://cdn.simplecss.org/simple.css">
+    <style>
+        body {
+            display: flex;
+            margin: 0;
+        }
+        nav.sidebar {
+            width: 200px;
+            background: #f2f2f2;
+            padding: 1rem;
+            height: 100vh;
+        }
+        main.content {
+            flex-grow: 1;
+            padding: 2rem;
+        }
+        a.nav-link {
+            display: block;
+            margin: 1rem 0;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <nav class="sidebar">
+        <h2>Menu</h2>
+        <a class="nav-link" 
+           hx-get="/journal" 
+           hx-target="#main-content" 
+           hx-swap="innerHTML">📄 Journal</a>
+        <a class="nav-link" 
+           hx-get="/holdings" 
+           hx-target="#main-content" 
+           hx-swap="innerHTML">📊 Holdings</a>
+        <a class="nav-link" 
+           hx-get="/performance" 
+           hx-target="#main-content" 
+           hx-swap="innerHTML">📈 Performance</a>
+    </nav>
+
+    <main id="main-content" class="content">
+        <!-- HTMX content loads here -->
+        <p>Loading...</p>
+    </main>
+</body>
+</html>
