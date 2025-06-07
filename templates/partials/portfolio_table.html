@@ -1,0 +1,26 @@
+<div id="portfolio-table" class="overflow-x-auto max-w-full">
+  <table class="min-w-full border border-gray-300 bg-white rounded shadow">
+    <thead class="bg-gray-200">
+      <tr>
+        <th class="border px-4 py-2 text-left">Symbol</th>
+        <th class="border px-4 py-2 text-left">Buy Date</th>
+        <th class="border px-4 py-2 text-left">Buy Price</th>
+        <th class="border px-4 py-2 text-left">Quantity</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for stock in portfolio %}
+      <tr>
+        <td class="border px-4 py-2">{{ stock.symbol }}</td>
+        <td class="border px-4 py-2">{{ stock.buy_date }}</td>
+        <td class="border px-4 py-2">{{ "%.2f"|format(stock.buy_price) }}</td>
+        <td class="border px-4 py-2">{{ "%.2f"|format(stock.quantity) }}</td>
+      </tr>
+      {% else %}
+      <tr>
+        <td colspan="4" class="border px-4 py-2 text-center text-gray-500">No stocks in portfolio yet.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
