@@ -3,24 +3,86 @@ layout: default
 title: Journal
 ---
 
-<h1 class="text-2xl font-bold mb-4">Journal</h1>
-<div id="journal-table"></div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portfolio Journal</title>
 
-<!-- Tabulator CSS & JS -->
-<link href="https://unpkg.com/tabulator-tables@5.4.4/dist/css/tabulator.min.css" rel="stylesheet" />
-<script src="https://unpkg.com/tabulator-tables@5.4.4/dist/js/tabulator.min.js"></script>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  
+  <!-- Tabulator CSS -->
+  <link href="https://unpkg.com/tabulator-tables@5.6.2/dist/css/tabulator.min.css" rel="stylesheet" />
 
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const table = new Tabulator("#journal-table", {
-      height:"500px",
-      layout:"fitColumns",
-      columns:[
-        {title:"Date", field:"date", sorter:"date", hozAlign:"center"},
-        {title:"Entry", field:"entry", formatter:"textarea"},
-        {title:"Tags", field:"tags", sorter:"string"},
-      ],
-      data:[], // We'll load data later from supabase or local
-    });
-  });
-</script>
+  <style>
+    body { padding-top: 4.5rem; }
+    .tabulator { font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/portfolio-tracker/">Portfolio Tracker</a>
+      <div class="collapse navbar-collapse">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="/portfolio-tracker/dashboard.html">Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link active" href="/portfolio-tracker/journal.html">Journal</a></li>
+          <li class="nav-item"><a class="nav-link" href="/portfolio-tracker/performance.html">Performance</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <div class="container">
+    <h2 class="mt-4 mb-3">Trade Journal</h2>
+    <div id="journal-table"></div>
+  </div>
+
+  <!-- Supabase JS -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Tabulator JS -->
+  <script src="https://unpkg.com/tabulator-tables@5.6.2/dist/js/tabulator.min.js"></script>
+
+  <script>
+    // Configure Supabase
+    const SUPABASE_URL = "https://dibljhwqxxsvdwrzhchk.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpYmxqaHdxeHhzdmR3cnpoY2hrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkyMzgwOTAsImV4cCI6MjA2NDgxNDA5MH0.qcbOKHlDjua_ijVa_3mvnfjbZCl1wROJDtZ4naeZZko";
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    async function loadJournal() {
+      const { data, error } = await supabase
+        .from('journal')
+        .select('*')
+        .order('date', { ascending: false });
+
+      if (error) {
+        console.error("Error loading journal:", error);
+        return;
+      }
+
+      // Initialize Tabulator
+      new Tabulator("#journal-table", {
+        data: data,
+        layout: "fitColumns",
+        responsiveLayout: "collapse",
+        columns: [
+          { title: "Date", field: "date", sorter: "date", hozAlign: "center" },
+          { title: "Type", field: "type", sorter: "string", hozAlign: "center" },
+          { title: "Symbol", field: "symbol", sorter: "string", hozAlign: "center" },
+          { title: "Shares", field: "shares", sorter: "number", hozAlign: "right" },
+          { title: "Price", field: "price", sorter: "number", hozAlign: "right", formatter: "money", formatterParams: { symbol: "$", precision: 2 } },
+          { title: "Notes", field: "notes", sorter: "string", hozAlign: "left" },
+        ],
+      });
+    }
+
+    loadJournal();
+  </script>
+</body>
+</html>
