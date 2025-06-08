@@ -7,100 +7,28 @@ title: Journal
 <div id="chart-container" style="width: 100%; height: 400px;"></div>
 
 
-<!-- Tabulator & Supabase Scripts -->
-<script src="https://unpkg.com/tabulator-tables@5.4.4/dist/js/tabulator.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.5/dist/umd/supabase.min.js"></script>
+<!-- Include Tabulator CSS & JS -->
+<link href="https://unpkg.com/tabulator-tables@5.5.2/dist/css/tabulator.min.css" rel="stylesheet">
+<script src="https://unpkg.com/tabulator-tables@5.5.2/dist/js/tabulator.min.js"></script>
 
-<link href="https://unpkg.com/tabulator-tables@5.4.4/dist/css/tabulator.min.css" rel="stylesheet" />
+<!-- Table Container -->
+<div id="journal-table" style="height: 300px;"></div>
 
 <script>
-  const SUPABASE_URL = "https://dibljhwqxxsvdwrzhchk.supabase.co";
-  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpYmxqaHdxeHhzdmR3cnpoY2hrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkyMzgwOTAsImV4cCI6MjA2NDgxNDA5MH0.qcbOKHlDjua_ijVa_3mvnfjbZCl1wROJDtZ4naeZZko";
-  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  // Minimal dataset
+  const data = [
+    { id: 1, symbol: "AAPL", quantity: 10 },
+    { id: 2, symbol: "GOOG", quantity: 5 }
+  ];
 
-  const blankRowId = "new-entry";
-  let table;
-
-  async function loadJournal() {
-    const { data, error } = await supabase
-      .from('journal')
-      .select('*')
-      .order('buy_date', { ascending: false });
-
-    if (error) {
-      console.error("Supabase error:", error);
-      return;
-    }
-
-    // Add an always-editable empty row
-    data.push({
-      id: blankRowId,
-      symbol: "",
-      buy_date: "",
-      buy_price: null,
-      quantity: null,
-      inserted_at: ""
-    });
-
-    
-    table = new Tabulator("#journal-table", {
-      height: "400px",
-      data: data,
-      layout: "fitColumns",
-      reactiveData: true,
-      placeholder: "No journal entries yet.",
-      history: true,
-      columns: [
-        { title: "Symbol", field: "symbol", editor: "input" },
-        { title: "Buy Date", field: "buy_date", editor: "input" },
-        { title: "Buy Price", field: "buy_price", editor: "number", hozAlign: "right" },
-        { title: "Quantity", field: "quantity", editor: "number", hozAlign: "right" },
-        { title: "Inserted At", field: "inserted_at", formatter: "datetime", editable: false }
-      ],
-      cellEdited: async function(cell) {
-        const row = cell.getRow();
-        const rowData = row.getData();
-
-        if (rowData.id === blankRowId) {
-          const newEntry = {
-            symbol: rowData.symbol || "",
-            buy_date: rowData.buy_date || new Date().toISOString().slice(0, 10),
-            buy_price: rowData.buy_price || 0,
-            quantity: rowData.quantity || 0
-          };
-
-          const { data: inserted, error } = await supabase
-            .from('journal')
-            .insert([newEntry])
-            .select()
-            .single();
-
-          if (error) {
-            alert("Insert failed: " + error.message);
-          } else {
-            row.update(inserted);
-            table.addRow({
-              id: blankRowId,
-              symbol: "",
-              buy_date: "",
-              buy_price: null,
-              quantity: null,
-              inserted_at: ""
-            });
-          }
-        } else {
-          const { id, ...update } = rowData;
-          const { error } = await supabase
-            .from('journal')
-            .update(update)
-            .eq('id', id);
-          if (error) {
-            alert("Update failed: " + error.message);
-          }
-        }
-      }
-    });
-  }
-
-  loadJournal();
+  // Initialize Tabulator
+  new Tabulator("#journal-table", {
+    data: data,
+    height: "300px",
+    layout: "fitColumns",
+    columns: [
+      { title: "Symbol", field: "symbol" },
+      { title: "Quantity", field: "quantity" }
+    ]
+  });
 </script>
