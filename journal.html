@@ -12,7 +12,6 @@ title: Journal
 
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-  
   <!-- Tabulator CSS -->
   <link href="https://unpkg.com/tabulator-tables@5.6.2/dist/css/tabulator.min.css" rel="stylesheet" />
 
@@ -37,23 +36,53 @@ title: Journal
     </div>
   </nav>
 
-  <!-- Page Content -->
+  <!-- Content -->
   <div class="container">
     <h2 class="mt-4 mb-3">Trade Journal</h2>
+
+    <!-- Add Entry Form -->
+    <form id="entry-form" class="row g-2 mb-4">
+      <div class="col-md-2">
+        <select class="form-select" id="type" required>
+          <option value="">Type</option>
+          <option>buy</option>
+          <option>sell</option>
+          <option>dividend</option>
+          <option>split</option>
+          <option>fee</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <input type="text" class="form-control" id="symbol" placeholder="Symbol" required />
+      </div>
+      <div class="col-md-2">
+        <input type="date" class="form-control" id="date" required />
+      </div>
+      <div class="col-md-2">
+        <input type="number" step="0.01" class="form-control" id="price" placeholder="Price" />
+      </div>
+      <div class="col-md-2">
+        <input type="number" step="0.01" class="form-control" id="shares" placeholder="Shares" />
+      </div>
+      <div class="col-md-2">
+        <button class="btn btn-primary w-100" type="submit">Add</button>
+      </div>
+    </form>
+
+    <!-- Table -->
     <div id="journal-table"></div>
   </div>
 
-  <!-- Supabase JS -->
+  <!-- Supabase + Tabulator JS -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-  <!-- Tabulator JS -->
   <script src="https://unpkg.com/tabulator-tables@5.6.2/dist/js/tabulator.min.js"></script>
 
   <script>
-    // Configure Supabase
     const SUPABASE_URL = "https://dibljhwqxxsvdwrzhchk.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpYmxqaHdxeHhzdmR3cnpoY2hrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkyMzgwOTAsImV4cCI6MjA2NDgxNDA5MH0.qcbOKHlDjua_ijVa_3mvnfjbZCl1wROJDtZ4naeZZko";
     const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let table;
 
     async function loadJournal() {
       const { data, error } = await supabase
@@ -66,21 +95,51 @@ title: Journal
         return;
       }
 
-      // Initialize Tabulator
-      new Tabulator("#journal-table", {
-        data: data,
-        layout: "fitColumns",
-        responsiveLayout: "collapse",
-        columns: [
-          { title: "Date", field: "date", sorter: "date", hozAlign: "center" },
-          { title: "Type", field: "type", sorter: "string", hozAlign: "center" },
-          { title: "Symbol", field: "symbol", sorter: "string", hozAlign: "center" },
-          { title: "Shares", field: "shares", sorter: "number", hozAlign: "right" },
-          { title: "Price", field: "price", sorter: "number", hozAlign: "right", formatter: "money", formatterParams: { symbol: "$", precision: 2 } },
-          { title: "Notes", field: "notes", sorter: "string", hozAlign: "left" },
-        ],
-      });
+      if (table) {
+        table.replaceData(data);
+      } else {
+        table = new Tabulator("#journal-table", {
+          data: data,
+          layout: "fitColumns",
+          placeholder: "No journal entries yet.",
+          responsiveLayout: "collapse",
+          columns: [
+            { title: "Date", field: "date", sorter: "date", hozAlign: "center" },
+            { title: "Type", field: "type", sorter: "string", hozAlign: "center" },
+            { title: "Symbol", field: "symbol", sorter: "string", hozAlign: "center" },
+            { title: "Shares", field: "shares", sorter: "number", hozAlign: "right" },
+            { title: "Price", field: "price", sorter: "number", hozAlign: "right", formatter: "money", formatterParams: { symbol: "$", precision: 2 } },
+            { title: "Notes", field: "notes", hozAlign: "left" },
+          ]
+        });
+      }
     }
+
+    // Entry form submission
+    document.getElementById("entry-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const type = document.getElementById("type").value;
+      const symbol = document.getElementById("symbol").value;
+      const date = document.getElementById("date").value;
+      const price = parseFloat(document.getElementById("price").value) || null;
+      const shares = parseFloat(document.getElementById("shares").value) || null;
+
+      const { error } = await supabase.from('journal').insert([{
+        type,
+        symbol,
+        date,
+        price,
+        shares,
+      }]);
+
+      if (error) {
+        alert("Error saving entry: " + error.message);
+      } else {
+        document.getElementById("entry-form").reset();
+        loadJournal();
+      }
+    });
 
     loadJournal();
   </script>
