@@ -18,7 +18,7 @@ title: Journal
   // 🔧 Replace with your Supabase details
   const supabaseUrl = "https://dibljhwqxxsvdwrzhchk.supabase.co";
   const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpYmxqaHdxeHhzdmR3cnpoY2hrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkyMzgwOTAsImV4cCI6MjA2NDgxNDA5MH0.qcbOKHlDjua_ijVa_3mvnfjbZCl1wROJDZ4naeZZko";
-  const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+  const supabase = Supabase.createClient(supabaseUrl, supabaseKey);
 
   // For now, use a test/fixed user_id (replace with actual logic)
   const USER_ID = "00000000-0000-0000-0000-000000000000"; // Ensure this matches a user_id in your Supabase 'journal' table
