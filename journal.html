@@ -5,11 +5,11 @@ title: Journal
 
 <h1 class="text-2xl font-bold mb-4">Journal</h1>
 
-<!-- Tabulator CSS & JS -->
+---
+
 <link href="https://unpkg.com/tabulator-tables@5.5.2/dist/css/tabulator.min.css" rel="stylesheet">
 <script src="https://unpkg.com/tabulator-tables@5.5.2/dist/js/tabulator.min.js"></script>
 
-<!-- Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <div id="journal-table" style="height: 500px;"></div>
@@ -17,19 +17,28 @@ title: Journal
 <script>
   // 🔧 Replace with your Supabase details
   const supabaseUrl = "https://dibljhwqxxsvdwrzhchk.supabase.co";
-  const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpYmxqaHdxeHhzdmR3cnpoY2hrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkyMzgwOTAsImV4cCI6MjA2NDgxNDA5MH0.qcbOKHlDjua_ijVa_3mvnfjbZCl1wROJDtZ4naeZZko";
+  const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpYmxqaHdxeHhzdmR3cnpoY2hrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkyMzgwOTAsImV4cCI6MjA2NDgxNDA5MH0.qcbOKHlDjua_ijVa_3mvnfjbZCl1wROJDZ4naeZZko";
   const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
   // For now, use a test/fixed user_id (replace with actual logic)
-  const USER_ID = "00000000-0000-0000-0000-000000000000";
+  const USER_ID = "00000000-0000-0000-0000-000000000000"; // Ensure this matches a user_id in your Supabase 'journal' table
 
-  // Define columns
+  // Define columns - **Added 'id' column here**
   const columns = [
+    { title: "ID", field: "id", visible: false, editable: false }, // Hidden but present
     { title: "Symbol", field: "symbol", editor: "input" },
-    { title: "Buy Date", field: "buy_date", editor: "input" },
+    { title: "Buy Date", field: "buy_date", editor: "input",
+      formatter: "datetime", formatterParams: { outputFormat: "YYYY-MM-DD" }, // Format date for display
+      editorParams: {
+        type: "date", // Use a date picker for better UX
+        format: "YYYY-MM-DD"
+      }
+    },
     { title: "Buy Price", field: "buy_price", editor: "number", hozAlign: "right" },
     { title: "Quantity", field: "quantity", editor: "number", hozAlign: "right" },
-    { title: "Inserted At", field: "inserted_at", editable: false }
+    { title: "Inserted At", field: "inserted_at", editable: false,
+      formatter: "datetime", formatterParams: { outputFormat: "YYYY-MM-DD HH:mm:ss" } // Format timestamp
+    }
   ];
 
   // Initialize table
@@ -39,30 +48,45 @@ title: Journal
     placeholder: "No trades yet — start typing to add.",
     reactiveData: true,
     history: true,
-    data: [],
+    data: [], // Start with empty data, loaded asynchronously
     columns: columns,
     cellEdited: async function (cell) {
-      const row = cell.getRow().getData();
+      const rowData = cell.getRow().getData();
 
-      // Add user_id manually (you'd use the logged-in user in real case)
-      row.user_id = USER_ID;
+      // Add user_id if not already present
+      if (!rowData.user_id) {
+        rowData.user_id = USER_ID;
+      }
+      // Generate UUID if 'id' is missing (for newly added rows before first edit)
+      if (!rowData.id) {
+        rowData.id = crypto.randomUUID();
+        cell.getRow().update({ id: rowData.id }); // Update the row in Tabulator with the new ID
+      }
 
       // Upsert row into Supabase
       const { error } = await supabase
         .from("journal")
-        .upsert([row], { onConflict: "id" });
+        .upsert([rowData], { onConflict: "id" });
 
       if (error) {
         console.error("Supabase upsert error:", error.message);
+        // Optionally, revert the cell change or show a user-friendly error
       } else {
-        console.log("Row saved.");
+        console.log("Row saved successfully:", rowData);
+        // After successful save, refresh the table to reflect any server-side changes (like inserted_at)
+        loadData();
       }
     },
     rowAdded: function (row) {
       const data = row.getData();
       if (!data.id) {
-        // Generate UUID if not yet assigned
+        // Generate UUID for new rows immediately when they are added to the table
         data.id = crypto.randomUUID();
+        row.update(data);
+      }
+      // You might also want to set inserted_at here for new rows if you're not relying solely on Supabase defaults
+      if (!data.inserted_at) {
+        data.inserted_at = new Date().toISOString();
         row.update(data);
       }
     },
@@ -81,8 +105,12 @@ title: Journal
       return;
     }
 
-    table.replaceData(data);
+    if (data) {
+      table.replaceData(data);
+      console.log("Data loaded successfully:", data);
+    }
   }
 
+  // Initial data load when the page loads
   loadData();
 </script>
