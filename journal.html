@@ -102,8 +102,9 @@ title: Journal
       return;
     }
 
+    console.log("Data loaded from Supabase:", data); // <--- add this line
+
     table.replaceData(data || []);
-    console.log("Data loaded:", data);
   }
 
   // Initial load
