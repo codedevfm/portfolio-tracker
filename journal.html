@@ -49,31 +49,42 @@ title: Journal
     columns: columns,
     data: [],
     addRowPos: "bottom",       // Always keep empty row at the bottom
-    cellEdited: async function(cell) {
+    
+    cellEdited: async function (cell) {
+      console.log("cellEdited triggered");
+      
       const rowData = cell.getRow().getData();
+      console.log("Edited row data:", rowData);
 
-      // Assign user_id if missing
-      if (!rowData.user_id) rowData.user_id = USER_ID;
+      // Add user_id if not present
+      if (!rowData.user_id) {
+        rowData.user_id = USER_ID;
+        console.log("user_id added to rowData:", USER_ID);
+      }
 
-      // Assign UUID if missing
+      // Generate UUID if missing
       if (!rowData.id) {
         rowData.id = crypto.randomUUID();
+        console.log("Generated new UUID for row:", rowData.id);
         cell.getRow().update({ id: rowData.id });
       }
 
-      // Upsert into Supabase
-      const { error } = await supabase
-        .from("journal")
-        .upsert([rowData], { onConflict: "id" });
-
-      if (error) {
-        console.error("Supabase upsert error:", error.message);
-        alert("Error saving data: " + error.message);
-      } else {
-        console.log("Row saved:", rowData);
-        loadData();  // Refresh data to get updated inserted_at etc.
+      try {
+        const { error } = await supabase
+          .from("journal")
+          .upsert([rowData], { onConflict: "id" });
+          
+        if (error) {
+          console.error("Supabase upsert error:", error.message);
+        } else {
+          console.log("Row saved successfully:", rowData);
+          await loadData();  // refresh the table after successful save
+        }
+      } catch (err) {
+        console.error("Unexpected error during upsert:", err);
       }
     },
+
     rowAdded: function(row) {
       const data = row.getData();
 
