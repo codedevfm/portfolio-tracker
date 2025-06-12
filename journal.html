@@ -109,9 +109,13 @@ title: Journal
 
     if (data) {
       table.replaceData(data);
-      console.log("Data loaded successfully:", data);
+
+      // Always add an empty row at the end
+      table.addRow({});
+      console.log("Data loaded with empty row appended:", data);
     }
   }
+
 
   // Initial data load when the page loads
   loadData();
