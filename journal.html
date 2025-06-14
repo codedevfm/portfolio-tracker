@@ -51,23 +51,25 @@ title: Journal
         headerFilterParams: { values: ACTIVITY_TYPES }
       },
       { title: "Symbol", field: "symbol", editor: "input" },
-     {
-        title: "Date",
+      {
+        title: "Trade Date",
         field: "trade_date",
-        editor: "input",
-        editorParams: { inputType: "date" },
-        mutator: (value) => {
-          // Convert ISO to yyyy-MM-dd for input[type=date]
-          if (value && typeof value === "string") {
-            return value.slice(0, 10);
-          }
-          return value;
+        formatter: function(cell) {
+          const value = cell.getValue();
+          if (!value) return "";
+          // Format date as YYYY-MM-DD using native JS (or luxon if loaded)
+          const d = new Date(value);
+          if (isNaN(d)) return value;
+          return d.toISOString().substring(0, 10); // YYYY-MM-DD
         },
-        formatter: "datetime",
-        formatterParams: {
-          outputFormat: "yyyy-MM-dd",
+        editor: "input",
+        editorParams: {
+          elementAttributes: {
+            type: "date"
+          }
         }
-      },
+      }
+      ,
       {
         title: "Quantity",
         field: "quantity",
