@@ -55,7 +55,7 @@ title: Journal
   // Tabulator columns
   const columns = [
     { title: "ID", field: "id", visible: false, editable: false },
-    { title: "Activity", field: "activity_type", editor: "select", editorParams: { values: ACTIVITY_TYPES }, headerFilter: "select", headerFilterParams: { values: ["", ...ACTIVITY_TYPES] }},
+    { title: "Activity", field: "activity_type", editor: "list",   editorParams: {values: ["Buy", "Sell", "Dividend", "Split", "Interest","Fee","Other"], autocomplete: true}},
     { title: "Symbol", field: "symbol", editor: "input", headerFilter: "input" },
     { title: "Trade Date", field: "trade_date", editor: "input", formatter: "datetime", formatterParams: { inputFormat: "YYYY-MM-DD", outputFormat: "YYYY-MM-DD" }, editorParams: { type: "date" }, headerFilter: "input" },
     { title: "Quantity", field: "quantity", editor: "number", hozAlign: "right", headerFilter: "number" },
@@ -129,6 +129,12 @@ title: Journal
       return;
     }
 
+    //make sure every row has an id 
+    for (const row of data) {
+      if (!row.id) {
+        row.id = crypto.randomUUID();
+      }
+    }
     table.replaceData(data || []);
 
     if (!data || data.length === 0) {
@@ -145,7 +151,9 @@ title: Journal
       });
     }
 
-    console.log("Data loaded from Supabase:", data);
+    //console.log("Data loaded from Supabase:", data);
+    console.log("Data loaded from Supabase:", JSON.stringify(data, null, 2));
+
   }
 
 
