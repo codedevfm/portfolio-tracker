@@ -67,10 +67,13 @@ title: Journal
         title: "Trade Date",
         field: "trade_date",
         editor: function(cell, onRendered, success, cancel) {
-          // create input element
+          // create input
           const input = document.createElement("input");
           input.type = "text";
           input.style.width = "100%";
+
+          // Initialize input value with current cell value
+          input.value = cell.getValue() || "";
 
           onRendered(() => {
             input.focus();
@@ -81,15 +84,17 @@ title: Journal
           flatpickr(input, {
             allowInput: true,
             dateFormat: "Y-m-d",
+            defaultDate: input.value || null,
             onChange: function(selectedDates, dateStr) {
-              success(dateStr);  // update cell value on date select
+              success(dateStr);
             },
             onClose: function() {
-              // if user typed manually, update cell with input value
+              // On close, if user typed manually, update cell value
               success(input.value);
-            },
+            }
           });
 
+          // Cancel edit on Escape key
           input.addEventListener("keydown", function(e) {
             if (e.key === "Escape") {
               cancel();
@@ -100,10 +105,10 @@ title: Journal
         },
         formatter: function(cell) {
           const val = cell.getValue();
-          if (!val) return "";
-          return val;  // or format as needed
-        },
+          return val ? val : "";
+        }
       }
+
 
 
 
