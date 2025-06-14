@@ -15,6 +15,14 @@ title: Journal
 <!-- Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+<!-- Flatpickr CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
+
+<!-- Flatpickr JS -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+
+
 <div id="journal-table" style="height: 500px;"></div>
 
 <script>
@@ -57,41 +65,32 @@ title: Journal
         formatter: function(cell) {
           const val = cell.getValue();
           if (!val) return "";
-          return val.slice(0, 10);  // Always show YYYY-MM-DD
+          // Just show YYYY-MM-DD (assumes ISO string from DB)
+          return val.slice(0, 10);
         },
         editor: function(cell, onRendered, success, cancel) {
           const input = document.createElement("input");
-          input.setAttribute("type", "date");
+          input.type = "text";
 
-          const value = cell.getValue();
-          if (value) {
-            input.value = value.slice(0, 10); // Trim to YYYY-MM-DD
-          }
-
-          input.style.width = "100%";
-          input.style.boxSizing = "border-box";
-
-          onRendered(() => {
-            input.focus();
-            input.style.height = "100%";
-          });
-
-          input.addEventListener("change", () => {
-            if (input.value) {
-              const isoDate = new Date(input.value).toISOString();
-              success(isoDate);  // Save as ISO
-            } else {
-              success(null);
+          // Initialize Flatpickr on the input
+          flatpickr(input, {
+            dateFormat: "Y-m-d",      // Output format YYYY-MM-DD
+            defaultDate: cell.getValue() || null,
+            allowInput: true,
+            onClose: function(selectedDates, dateStr) {
+              success(dateStr);  // Pass formatted date string back to Tabulator
             }
           });
 
-          input.addEventListener("blur", () => {
-            cancel();  // Optionally: auto-cancel if unfocused
+          onRendered(() => {
+            input.focus();
+            input.style.cssText = "width: 100%; box-sizing: border-box;";
           });
 
           return input;
         }
       }
+
 
 
 
