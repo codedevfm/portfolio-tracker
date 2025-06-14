@@ -5,118 +5,87 @@ title: Journal
 
 <h1 class="text-2xl font-bold mb-4">Journal</h1>
 
-<!-- Tabulator CSS & JS -->
+<!-- Tabulator CSS -->
 <link href="https://unpkg.com/tabulator-tables@5.5.2/dist/css/tabulator.min.css" rel="stylesheet" />
+
+<!-- Tabulator + Luxon JS -->
+<script src="https://unpkg.com/luxon@3.4.4/build/global/luxon.min.js"></script>
 <script src="https://unpkg.com/tabulator-tables@5.5.2/dist/js/tabulator.min.js"></script>
 
 <!-- Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<!-- Luxon -->
-<script src="https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/global/luxon.min.js"></script>
-
-
-<div id="test-table"></div>
+<div id="journal-table" style="height: 500px;"></div>
 
 <script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const table = new Tabulator("#test-table", {
-      height: 300,
-      data: [{ name: "Apple", price: 150 }],
-      columns: [
-        { title: "Name", field: "name", editor: "input" },
-        { title: "Price", field: "price", editor: "number" }
-      ],
-      cellEdited: function (cell) {
-        console.log("cellEdited triggered");
-        console.log("Row Data:", cell.getRow().getData());
-      }
-    });
-  });
-</script>
-
-
-
-<div id="journal-table" style="height: 600px;"></div>
-
-<script>
-  // Supabase setup
+  // ✅ Your Supabase details
   const supabaseUrl = "https://dibljhwqxxsvdwrzhchk.supabase.co";
   const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpYmxqaHdxeHhzdmR3cnpoY2hrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkyMzgwOTAsImV4cCI6MjA2NDgxNDA5MH0.qcbOKHlDjua_ijVa_3mvnfjbZCl1wROJDtZ4naeZZko"
   const { createClient } = window.supabase;
   const supabase = createClient(supabaseUrl, supabaseKey);
-  
-  // Use actual logged-in user id here; for now, a fixed test user id:
+
   const USER_ID = "00000000-0000-0000-0000-000000000000";
 
-  // Define activity types (must match your ENUM exactly)
-  const ACTIVITY_TYPES = ["buy", "sell", "dividend", "split", "interest", "fee", "other"];
-
-  // Tabulator columns
-  const columns = [
-    { title: "ID", field: "id", visible: false, editable: false },
-    { title: "Activity", field: "activity_type", editor: "list",   editorParams: {values: ["Buy", "Sell", "Dividend", "Split", "Interest","Fee","Other"], autocomplete: true}},
-    { title: "Symbol", field: "symbol", editor: "input", headerFilter: "input" },
-    { title: "Trade Date", field: "trade_date", editor: "input", formatter: "datetime", formatterParams: { inputFormat: "YYYY-MM-DD", outputFormat: "YYYY-MM-DD" }, editorParams: { type: "date" }, headerFilter: "input" },
-    { title: "Quantity", field: "quantity", editor: "number", hozAlign: "right", headerFilter: "number" },
-    { title: "Price", field: "price", editor: "number", hozAlign: "right", headerFilter: "number" },
-    { title: "Fee", field: "fee", editor: "number", hozAlign: "right", headerFilter: "number" },
-    { title: "Inserted At", field: "inserted_at", editable: false, formatter: "datetime", formatterParams: { outputFormat: "YYYY-MM-DD HH:mm:ss" } }
-  ];
-
-  // Initialize Tabulator
+  // ✅ Table setup
   const table = new Tabulator("#journal-table", {
-    height: "600px",
+    height: "500px",
     layout: "fitColumns",
+    placeholder: "No entries yet — start typing to add.",
     reactiveData: true,
     history: true,
-    placeholder: "No entries yet — start typing to add.",
-    columns: columns,
     data: [],
-    addRowPos: "bottom",       // Always keep empty row at the bottom
-    
+
+    columns: [
+      { title: "ID", field: "id", visible: false, editable: false },
+      {title: "Activity Type", field: "activity_type", editor: "list",   editorParams: {values: ["BUY", "SELL", "DIVIDEND", "SPLIT", "FEE"], autocomplete: true}},
+      { title: "Symbol", field: "symbol", editor: "input" },
+      { title: "Trade Date", field: "trade_date", editor: "input", formatter: "datetime", formatterParams: { inputFormat: "yyyy-MM-dd", outputFormat: "yyyy-MM-dd", invalidPlaceholder: "" }},
+      { title: "Quantity", field: "quantity", editor: "number" },
+      { title: "Price", field: "price", editor: "number" },
+      { title: "Fee", field: "fee", editor: "number" },
+      { title: "Note", field: "note", editor: "input" },
+      { title: "Inserted At", field: "inserted_at", editable: false, formatter: "datetime", formatterParams: { outputFormat: "yyyy-MM-dd HH:mm:ss" } },
+    ],
+
     cellEdited: async function (cell) {
-      console.log("cellEdited triggered");  // <-- ✅ Debug print
+      console.log("📢 cellEdited triggered");
+
       const rowData = cell.getRow().getData();
 
-      // Fill in any missing ID
+      // Patch user_id/id if needed
+      if (!rowData.user_id) {
+        rowData.user_id = USER_ID;
+      }
       if (!rowData.id) {
         rowData.id = crypto.randomUUID();
         cell.getRow().update({ id: rowData.id });
       }
 
-      // Add user ID if not set
-      if (!rowData.user_id) {
-        rowData.user_id = USER_ID;
-      }
-
+      // Upsert to Supabase
       const { error } = await supabase
         .from("journal")
         .upsert([rowData], { onConflict: "id" });
 
       if (error) {
-        console.error("Supabase upsert error:", error.message);
+        console.error("❌ Supabase upsert error:", error.message);
       } else {
-        console.log("Row saved successfully:", rowData);
-        loadData();  // Refresh to get server-side inserted_at
+        console.log("✅ Row saved:", rowData);
+        loadData(); // Refresh view
       }
     },
 
-    rowAdded: function(row) {
+    rowAdded: function (row) {
       const data = row.getData();
-
       if (!data.id) {
         data.id = crypto.randomUUID();
-        row.update(data);
-      }
-      if (!data.inserted_at) {
+        data.user_id = USER_ID;
         data.inserted_at = new Date().toISOString();
         row.update(data);
       }
-    }
+    },
   });
 
-  // Load data function
+  // ✅ Load from Supabase
   async function loadData() {
     const { data, error } = await supabase
       .from("journal")
@@ -125,38 +94,26 @@ title: Journal
       .order("trade_date", { ascending: false });
 
     if (error) {
-      console.error("Supabase fetch error:", error.message);
+      console.error("❌ Supabase fetch error:", error.message);
       return;
     }
 
-    //make sure every row has an id 
-    for (const row of data) {
+    console.log("🧾 Data loaded from Supabase:");
+    console.table(data);
+
+    // Patch: Add ID if missing
+    const patchedData = data.map(row => {
       if (!row.id) {
         row.id = crypto.randomUUID();
       }
-    }
-    table.replaceData(data || []);
+      return row;
+    });
 
-    if (!data || data.length === 0) {
-      // Add an empty row so user can start typing
-      table.addRow({
-        ticker: "",
-        activity_type: "",
-        date: "",
-        quantity: null,
-        price: null,
-        fee: null,
-        note: "",
-        user_id: USER_ID,
-      });
-    }
+    table.replaceData(patchedData);
 
-    //console.log("Data loaded from Supabase:", data);
-    console.log("Data loaded from Supabase:", JSON.stringify(data, null, 2));
-
+    // Always ensure one empty row is present
+    table.addRow({ user_id: USER_ID });
   }
 
-
-  // Initial load
   loadData();
 </script>
