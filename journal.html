@@ -53,7 +53,7 @@ title: Journal
         editor: "list",               // use the new 'list' editor instead of 'select'
         editorParams: {
           values: ACTIVITY_TYPES,
-          autocomplete: true,
+          autocomplete: false,
           showListOnEmpty: true,     // this makes the dropdown open immediately on click
         },
         formatter: "plaintext",
@@ -100,13 +100,9 @@ title: Journal
         }
       }
 
-
-
-      
-
       ,
       {
-        title: "quantity",
+        title: "Quantity",
         field: "quantity",
         editor: "number",
         hozAlign: "right"
