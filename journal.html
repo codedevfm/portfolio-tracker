@@ -118,7 +118,7 @@ title: Journal
       .from("journal")
       .select("*")
       .eq("user_id", USER_ID)
-      .order("date", { ascending: false });
+      .order("trade_date", { ascending: false });
 
     if (error) {
       console.error("Supabase fetch error:", error.message);
