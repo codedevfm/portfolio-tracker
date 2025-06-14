@@ -59,27 +59,40 @@ title: Journal
           if (!val) return "";
           return val.slice(0, 10);  // Always show YYYY-MM-DD
         },
-        editor: "input",
-        editorParams: {
-          type: "date",
-          elementAttributes: {
-            pattern: "\\d{4}-\\d{2}-\\d{2}",
-            placeholder: "YYYY-MM-DD"
+        editor: function(cell, onRendered, success, cancel) {
+          const input = document.createElement("input");
+          input.setAttribute("type", "date");
+
+          const value = cell.getValue();
+          if (value) {
+            input.value = value.slice(0, 10); // Trim to YYYY-MM-DD
           }
-        },
-        mutator: function(value) {
-          if (!value) return null;
-          // Prevent "MM/DD/YYYY" conversion bugs
-          const d = new Date(value);
-          if (isNaN(d)) return null;
-          return d.toISOString();  // Always store as ISO
-        },
-        mutatorData: function(value) {
-          // During table load, convert ISO string to YYYY-MM-DD for the input
-          if (!value) return "";
-          return value.slice(0, 10);
+
+          input.style.width = "100%";
+          input.style.boxSizing = "border-box";
+
+          onRendered(() => {
+            input.focus();
+            input.style.height = "100%";
+          });
+
+          input.addEventListener("change", () => {
+            if (input.value) {
+              const isoDate = new Date(input.value).toISOString();
+              success(isoDate);  // Save as ISO
+            } else {
+              success(null);
+            }
+          });
+
+          input.addEventListener("blur", () => {
+            cancel();  // Optionally: auto-cancel if unfocused
+          });
+
+          return input;
         }
       }
+
 
 
 
