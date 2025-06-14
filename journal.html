@@ -55,20 +55,28 @@ title: Journal
         title: "Trade Date",
         field: "trade_date",
         formatter: function(cell) {
-          const value = cell.getValue();
-          if (!value) return "";
-          // Format date as YYYY-MM-DD using native JS (or luxon if loaded)
-          const d = new Date(value);
-          if (isNaN(d)) return value;
-          return d.toISOString().substring(0, 10); // YYYY-MM-DD
+          const val = cell.getValue();
+          if (!val) return "";
+          // Format as ISO date string (YYYY-MM-DD)
+          const date = new Date(val);
+          if (isNaN(date)) return val;
+          return date.toISOString().slice(0,10);
         },
         editor: "input",
         editorParams: {
           elementAttributes: {
             type: "date"
           }
+        },
+        mutator: function(value) {
+          // ensure the value stored is always ISO YYYY-MM-DD (or null)
+          if (!value) return null;
+          let date = new Date(value);
+          if (isNaN(date)) return null;
+          return date.toISOString().slice(0,10);
         }
       }
+
       ,
       {
         title: "Quantity",
