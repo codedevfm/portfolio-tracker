@@ -12,6 +12,27 @@ title: Journal
 <!-- Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+<div id="test-table"></div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const table = new Tabulator("#test-table", {
+      height: 300,
+      data: [{ name: "Apple", price: 150 }],
+      columns: [
+        { title: "Name", field: "name", editor: "input" },
+        { title: "Price", field: "price", editor: "number" }
+      ],
+      cellEdited: function (cell) {
+        console.log("cellEdited triggered");
+        console.log("Row Data:", cell.getRow().getData());
+      }
+    });
+  });
+</script>
+
+
+
 <div id="journal-table" style="height: 600px;"></div>
 
 <script>
