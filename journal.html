@@ -22,6 +22,14 @@ title: Journal
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/default.css" />
 
+<!-- jQuery core -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- jQuery UI -->
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+
+
 
 
 <div id="journal-table" style="height: 500px;"></div>
@@ -63,99 +71,56 @@ title: Journal
       ,
       { title: "Symbol", field: "symbol", editor: "input" },
       
-        {
-          title: "Trade Date",
-          field: "trade_date",
-          formatter: function(cell, formatterParams, onRendered){
-            const val = cell.getValue();
-            if(!val) return "";
+      {
+        
+        title: "Trade Date",
+        field: "trade_date",
+        editor: function(cell, onRendered, success, cancel) {
+          // create input element
+          let input = document.createElement("input");
+          input.type = "text";
+          input.style.width = "100%";
 
-            // Create container div for text + calendar icon
-            const container = document.createElement("div");
-            container.style.position = "relative";
-            container.style.display = "flex";
-            container.style.alignItems = "center";
-            container.style.justifyContent = "space-between";
-            container.style.paddingRight = "20px"; // space for icon
+          input.value = cell.getValue() ? cell.getValue().slice(0,10) : "";
 
-            // Date text span
-            const textSpan = document.createElement("span");
-            textSpan.textContent = val.slice(0,10); // format YYYY-MM-DD (assuming ISO string)
-            textSpan.style.cursor = "text";
-
-            // Calendar icon (simple SVG)
-            const calIcon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-            calIcon.setAttribute("viewBox", "0 0 24 24");
-            calIcon.setAttribute("width", "16");
-            calIcon.setAttribute("height", "16");
-            calIcon.style.cursor = "pointer";
-            calIcon.style.opacity = "0";
-            calIcon.style.transition = "opacity 0.2s ease";
-            calIcon.style.flexShrink = "0";
-            calIcon.innerHTML = `
-              <path fill="currentColor" d="M19 4h-1V2h-2v2H8V2H6v2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zM5 8v10h14V8H5z"/>
-            `;
-
-            // Show icon on hover of container
-            container.addEventListener("mouseenter", () => { calIcon.style.opacity = "1"; });
-            container.addEventListener("mouseleave", () => { calIcon.style.opacity = "0"; });
-
-            container.appendChild(textSpan);
-            container.appendChild(calIcon);
-
-            // When calendar icon clicked, open flatpickr popup
-            calIcon.addEventListener("click", (e) => {
-              e.stopPropagation();
-
-              // Create a hidden input for flatpickr to bind
-              const input = document.createElement("input");
-              input.type = "text";
-              input.style.position = "absolute";
-              input.style.left = "-9999px"; // offscreen
-
-              document.body.appendChild(input);
-
-              const fp = flatpickr(input, {
-                defaultDate: val.slice(0,10),
-                onClose: () => {
-                  fp.destroy();
-                  document.body.removeChild(input);
-                },
-                onChange: (selectedDates, dateStr) => {
-                  cell.setValue(dateStr);
-                  fp.close();
-                },
-                dateFormat: "Y-m-d",
-                allowInput: true,
-                clickOpens: true,
-              });
-
-              fp.open();
-            });
-
-            return container;
-          },
-          editor: "input",
-          editorParams: {
-            type: "date"
-          },
-          mutator: function(value){
-            // ensure value stored in ISO yyyy-mm-dd
-            if(!value) return null;
-            if(typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)){
-              return value;
-            }
-            try {
-              const d = new Date(value);
-              if(!isNaN(d)) {
-                return d.toISOString().slice(0,10);
+          onRendered(() => {
+            $(input).datepicker({
+              dateFormat: "yy-mm-dd",
+              onSelect: function(dateText) {
+                success(dateText);
+              },
+              onClose: function() {
+                // if user closes without selection, commit current input value or cancel
+                if (input.value.trim() === "") {
+                  cancel();
+                } else {
+                  success(input.value);
+                }
               }
-            } catch {
-              return null;
+            });
+            input.focus();
+          });
+
+          input.addEventListener("keydown", function(e) {
+            if (e.key === "Enter") {
+              success(input.value);
+            } else if (e.key === "Escape") {
+              cancel();
             }
-            return null;
-          }
+          });
+
+          return input;
+        },
+        mutator: function(value) {
+          // normalize date format to yyyy-mm-dd
+          if (!value) return null;
+          if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
+          let d = new Date(value);
+          return isNaN(d) ? null : d.toISOString().slice(0,10);
         }
+      }
+
+      
 
       ,
       {
