@@ -57,10 +57,11 @@ title: Journal
         formatter: function(cell) {
           const val = cell.getValue();
           if (!val) return "";
-          return val.slice(0, 10); // Display as YYYY-MM-DD
+          return val.slice(0, 10);  // Always show YYYY-MM-DD
         },
-        editor: "date", // ✅ This triggers the calendar popup
+        editor: "input",
         editorParams: {
+          type: "date",
           elementAttributes: {
             pattern: "\\d{4}-\\d{2}-\\d{2}",
             placeholder: "YYYY-MM-DD"
@@ -68,9 +69,18 @@ title: Journal
         },
         mutator: function(value) {
           if (!value) return null;
-          return new Date(value).toISOString(); // Ensure ISO format in DB
+          // Prevent "MM/DD/YYYY" conversion bugs
+          const d = new Date(value);
+          if (isNaN(d)) return null;
+          return d.toISOString();  // Always store as ISO
+        },
+        mutatorData: function(value) {
+          // During table load, convert ISO string to YYYY-MM-DD for the input
+          if (!value) return "";
+          return value.slice(0, 10);
         }
       }
+
 
 
       ,
