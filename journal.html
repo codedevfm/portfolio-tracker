@@ -71,6 +71,16 @@ title: Journal
           const input = document.createElement("input");
           input.type = "text";
           input.style.width = "100%";
+          input.style.cssText = `
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            padding: 4px 8px;   /* some comfortable padding */
+            font-size: 14px;    /* or match your table font */
+            line-height: 1.5;   /* aligns text vertically */
+            border: none;       /* no extra borders */
+            outline: none;      /* removes blue outline on focus */
+          `;
 
           // Initialize input value with current cell value
           input.value = cell.getValue() || "";
