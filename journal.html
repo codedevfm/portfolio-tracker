@@ -25,6 +25,8 @@ title: Journal
   const supabase = createClient(supabaseUrl, supabaseKey);
 
   const USER_ID = "00000000-0000-0000-0000-000000000000";
+  const ACTIVITY_TYPES = ["Buy", "Sell", "Dividend", "Split", "Interest", "Fee", "Other"];
+
 
   // ✅ Table setup
   const table = new Tabulator("#journal-table", {
@@ -35,30 +37,80 @@ title: Journal
     history: true,
     data: [],
 
-    columns: [
+    columns : [
       { title: "ID", field: "id", visible: false, editable: false },
-      {title: "Activity Type", field: "activity_type", editor: "list",   editorParams: {values: ["BUY", "SELL", "DIVIDEND", "SPLIT", "FEE"], autocomplete: true}},
+      { 
+        title: "Activity",
+        field: "activity_type",
+        editor: "list",
+        editorParams: {
+          values: ACTIVITY_TYPES,
+          autocomplete: true,
+        },
+        headerFilter: "list",
+        headerFilterParams: { values: ACTIVITY_TYPES }
+      },
       { title: "Symbol", field: "symbol", editor: "input" },
-      { title: "Trade Date", field: "trade_date", editor: "input", formatter: "datetime", formatterParams: { inputFormat: "yyyy-MM-dd", outputFormat: "yyyy-MM-dd", invalidPlaceholder: "" }},
-      { title: "Quantity", field: "quantity", editor: "number" },
-      { title: "Price", field: "price", editor: "number" },
-      { title: "Fee", field: "fee", editor: "number" },
-      { title: "Note", field: "note", editor: "input" },
-      { title: "Inserted At", field: "inserted_at", editable: false, formatter: "datetime", formatterParams: { outputFormat: "yyyy-MM-dd HH:mm:ss" } },
+      {
+        title: "Date",
+        field: "trade_date",
+        editor: "input",
+        editorParams: { inputType: "date" },
+        formatter: "datetime",
+        formatterParams: { outputFormat: "yyyy-LL-dd" }
+      },
+      {
+        title: "Quantity",
+        field: "quantity",
+        editor: "number",
+        hozAlign: "right"
+      },
+      {
+        title: "Price",
+        field: "price",
+        editor: "number",
+        hozAlign: "right"
+      },
+      {
+        title: "Fee",
+        field: "fee",
+        editor: "number",
+        hozAlign: "right"
+      },
+      {
+        title: "Note",
+        field: "note",
+        editor: "input"
+      },
+      {
+        title: "Inserted At",
+        field: "inserted_at",
+        editable: false,
+        formatter: "datetime",
+        formatterParams: { outputFormat: "yyyy-LL-dd HH:mm:ss" }
+      }
     ],
 
-    cellEdited: async function (cell) {
-      console.log("📢 cellEdited triggered");
 
+    cellEdited: async function (cell) {
+      console.log("cellEdited triggered");
       const rowData = cell.getRow().getData();
 
-      // Patch user_id/id if needed
-      if (!rowData.user_id) {
-        rowData.user_id = USER_ID;
-      }
+      // Ensure ID exists
       if (!rowData.id) {
         rowData.id = crypto.randomUUID();
         cell.getRow().update({ id: rowData.id });
+      }
+
+      // Inject user ID if missing
+      if (!rowData.user_id) {
+        rowData.user_id = USER_ID;
+        cell.getRow().update({ user_id: USER_ID });
+      }
+
+      // Optional: auto-fill inserted_at on first edit
+      if (!rowData.inserted_at) {
+        rowData.inserted_at = new Date().toISOString();
       }
 
       // Upsert to Supabase
@@ -67,22 +119,33 @@ title: Journal
         .upsert([rowData], { onConflict: "id" });
 
       if (error) {
-        console.error("❌ Supabase upsert error:", error.message);
+        console.error("Supabase upsert error:", error.message);
       } else {
-        console.log("✅ Row saved:", rowData);
-        loadData(); // Refresh view
+        console.log("Row saved successfully:", rowData);
+        loadData();  // Refresh data from Supabase
       }
     },
 
     rowAdded: function (row) {
       const data = row.getData();
+
       if (!data.id) {
         data.id = crypto.randomUUID();
-        data.user_id = USER_ID;
-        data.inserted_at = new Date().toISOString();
-        row.update(data);
       }
+
+      if (!data.user_id) {
+        data.user_id = USER_ID;
+      }
+
+      if (!data.inserted_at) {
+        data.inserted_at = new Date().toISOString();
+      }
+
+      row.update(data);
     },
+
+
+
   });
 
   // ✅ Load from Supabase
