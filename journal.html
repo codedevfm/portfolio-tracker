@@ -48,17 +48,19 @@ title: Journal
 
     columns : [
       { title: "ID", field: "id", visible: false, editable: false },
-      { 
+      
+      {
         title: "Activity",
         field: "activity_type",
-        editor: "list",
+        editor: "list",               // use the new 'list' editor instead of 'select'
         editorParams: {
           values: ACTIVITY_TYPES,
-          autocomplete: true,
+          showListOnEmpty: true,     // this makes the dropdown open immediately on click
         },
-        headerFilter: "list",
-        headerFilterParams: { values: ACTIVITY_TYPES }
-      },
+        formatter: "plaintext",
+      }
+
+      ,
       { title: "Symbol", field: "symbol", editor: "input" },
       {
         title: "Trade Date",
