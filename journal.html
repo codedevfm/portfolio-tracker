@@ -51,13 +51,22 @@ title: Journal
         headerFilterParams: { values: ACTIVITY_TYPES }
       },
       { title: "Symbol", field: "symbol", editor: "input" },
-      {
+     {
         title: "Date",
         field: "trade_date",
         editor: "input",
         editorParams: { inputType: "date" },
+        mutator: (value) => {
+          // Convert ISO to yyyy-MM-dd for input[type=date]
+          if (value && typeof value === "string") {
+            return value.slice(0, 10);
+          }
+          return value;
+        },
         formatter: "datetime",
-        formatterParams: { outputFormat: "yyyy-MM-dd" }
+        formatterParams: {
+          outputFormat: "yyyy-MM-dd",
+        }
       },
       {
         title: "Quantity",
