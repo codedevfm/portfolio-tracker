@@ -155,6 +155,12 @@ title: Journal
       row.update(data);
     },
 
+      // This triggers editor open on single click for the trade_date cell
+    cellClick: function(e, cell) {
+      if (cell.getField() === "trade_date") {
+        cell.edit(true);  // open editor immediately on single click
+      }
+    },
 
 
   });
