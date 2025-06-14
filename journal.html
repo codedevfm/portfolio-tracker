@@ -72,37 +72,29 @@ title: Journal
     addRowPos: "bottom",       // Always keep empty row at the bottom
     
     cellEdited: async function (cell) {
-      console.log("cellEdited triggered");
-      
+      console.log("cellEdited triggered");  // <-- ✅ Debug print
       const rowData = cell.getRow().getData();
-      console.log("Edited row data:", rowData);
 
-      // Add user_id if not present
-      if (!rowData.user_id) {
-        rowData.user_id = USER_ID;
-        console.log("user_id added to rowData:", USER_ID);
-      }
-
-      // Generate UUID if missing
+      // Fill in any missing ID
       if (!rowData.id) {
         rowData.id = crypto.randomUUID();
-        console.log("Generated new UUID for row:", rowData.id);
         cell.getRow().update({ id: rowData.id });
       }
 
-      try {
-        const { error } = await supabase
-          .from("journal")
-          .upsert([rowData], { onConflict: "id" });
-          
-        if (error) {
-          console.error("Supabase upsert error:", error.message);
-        } else {
-          console.log("Row saved successfully:", rowData);
-          await loadData();  // refresh the table after successful save
-        }
-      } catch (err) {
-        console.error("Unexpected error during upsert:", err);
+      // Add user ID if not set
+      if (!rowData.user_id) {
+        rowData.user_id = USER_ID;
+      }
+
+      const { error } = await supabase
+        .from("journal")
+        .upsert([rowData], { onConflict: "id" });
+
+      if (error) {
+        console.error("Supabase upsert error:", error.message);
+      } else {
+        console.log("Row saved successfully:", rowData);
+        loadData();  // Refresh to get server-side inserted_at
       }
     },
 
@@ -126,18 +118,32 @@ title: Journal
       .from("journal")
       .select("*")
       .eq("user_id", USER_ID)
-      .order("trade_date", { ascending: false });
+      .order("date", { ascending: false });
 
     if (error) {
       console.error("Supabase fetch error:", error.message);
-      alert("Error loading data: " + error.message);
       return;
     }
 
-    console.log("Data loaded from Supabase:", data); // <--- add this line
-
     table.replaceData(data || []);
+
+    if (!data || data.length === 0) {
+      // Add an empty row so user can start typing
+      table.addRow({
+        ticker: "",
+        activity_type: "",
+        date: "",
+        quantity: null,
+        price: null,
+        fee: null,
+        note: "",
+        user_id: USER_ID,
+      });
+    }
+
+    console.log("Data loaded from Supabase:", data);
   }
+
 
   // Initial load
   loadData();
