@@ -14,7 +14,7 @@ title: Journal
 <!-- Tabulator + Luxon JS -->
 <script src="https://unpkg.com/luxon@3.4.4/build/global/luxon.min.js"></script>
 <script src="https://unpkg.com/tabulator-tables@5.5.2/dist/js/tabulator.min.js"></script>
-<link href="https://unpkg.com/tabulator-tables@5.5.2/dist/css/tabulator_materialize.min.css" rel="stylesheet">
+<link href="https://unpkg.com/tabulator-tables@5.5.2/dist/css/tabulator_materialize.min.css" rel="stylesheet">>
 
 <!-- Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -250,33 +250,31 @@ title: Journal
 
 <!-- tabulator styling -->
 <style>
-
-  /* Cell view mode */
-  .tabulator .tabulator-cell .tabulator-materialize .tabulator-row {
+  /* VIEW MODE: Properly override default cell styles */
+  .tabulator-materialize .tabulator-cell {
     font-size: 13px;
-    padding: 6px 8px !important; /* Adjust once globally */
+    padding: 6px 8px !important;
     line-height: 1.4;
     box-sizing: border-box;
     vertical-align: middle;
   }
 
-  /* Input/select edit mode */
-  /* EDIT MODE - MATCH EXACTLY */
-  .tabulator-cell input,
-  .tabulator-cell select {
+  /* EDIT MODE: Inputs inside cells */
+  .tabulator-materialize .tabulator-cell input,
+  .tabulator-materialize .tabulator-cell select {
     font-size: inherit;
     line-height: inherit;
     margin: 0;
-    padding: 0px; /* Avoid double padding */
-    padding: 6px 8px !important; /* Adjust once globally */
+    padding: 6px 8px !important;
     border: none;
     outline: none;
     width: 100%;
     height: 100%;
     box-sizing: border-box;
     vertical-align: middle;
-    background-color: transparent; /* Optional: match cell background */
+    background-color: transparent;
   }
+
 
 
 </style>
