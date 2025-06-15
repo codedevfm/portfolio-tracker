@@ -52,7 +52,7 @@ title: Journal
   // ✅ Table setup
   const table = new Tabulator("#journal-table", {
     // height: "500px",
-    // layout: "fitColumns",
+    layout: "fitColumns",
     placeholder: "No entries yet — start typing to add.",
     reactiveData: true,
     history: true,
@@ -250,5 +250,29 @@ title: Journal
 </script>
 
 
-
 <!-- tabulator styyling -->
+<style>
+
+  /* Cell view mode */
+  .tabulator .tabulator-cell {
+    font-size: 13px;
+    /* padding: 4px 6px !important; */
+    box-sizing: border-box;
+    vertical-align: middle;
+    line-height: 1.4;
+  }
+
+  /* Input/select edit mode */
+  .tabulator-cell input, .tabulator-cell select {
+    font-size: 13px;
+    /*padding: 4px 6px;*/
+    height: 100%;
+    width: 100%;
+    box-sizing: border-box;
+    line-height: 1.4;
+    vertical-align: middle;
+    border: none;
+    outline: none;
+  }
+
+</style>
