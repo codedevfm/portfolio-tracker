@@ -113,19 +113,19 @@ title: Journal
         title: "Quantity",
         field: "quantity",
         editor: "number",
-        hozAlign: "right"
+        hozAlign: "left"
       },
       {
         title: "Price",
         field: "price",
         editor: "number",
-        hozAlign: "right"
+        hozAlign: "left"
       },
       {
         title: "Fee",
         field: "fee",
         editor: "number",
-        hozAlign: "right"
+        hozAlign: "left"
       },
       {
         title: "Note",
@@ -252,4 +252,27 @@ title: Journal
   .tabulator {
     font-size: 13px;
   }
+
+  
+  /* For all Tabulator cells */
+  .tabulator-cell {
+    padding: 4px 8px;
+    box-sizing: border-box;
+    text-align: left; /* or whatever you want */
+  }
+
+  /* For the editor input inside the cell */
+  .tabulator-cell input {
+    width: 100% !important;
+    height: 100%;
+    padding: 4px 8px;
+    box-sizing: border-box;
+    font-family: inherit;
+    font-size: inherit;
+    border: none; /* or match normal cell border */
+    margin: 0;
+    text-align: inherit;
+  }
+
 </style>
+
