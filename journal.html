@@ -28,6 +28,12 @@ title: Journal
 
 <div id="journal-table" style="height: 500px;"></div>
 
+
+<!-- Material Design Font and Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+
 </style>
 
 
@@ -45,8 +51,8 @@ title: Journal
 
   // ✅ Table setup
   const table = new Tabulator("#journal-table", {
-    height: "500px",
-    layout: "fitColumns",
+    // height: "500px",
+    // layout: "fitColumns",
     placeholder: "No entries yet — start typing to add.",
     reactiveData: true,
     history: true,
