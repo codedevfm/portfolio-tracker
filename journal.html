@@ -296,8 +296,11 @@ title: Journal
     font-size: 13px;
     padding: 4px 6px !important;
     box-sizing: border-box;
-    vertical-align: middle;
     line-height: 1.4;
+    
+    /* 🚫 Prevent materialize from applying flex layout that causes alignment mismatch */
+    display: block !important;
+    align-items: unset !important;
   }
 
   /* Input/select edit mode */
