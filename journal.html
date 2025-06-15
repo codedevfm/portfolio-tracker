@@ -140,7 +140,13 @@ title: Journal
         formatterParams: { outputFormat: "yyyy-LL-dd HH:mm:ss" }
       }
     ],
+    
+    layout: "fitDataStretch",
 
+    columnDefaults: {
+      hozAlign: "left",
+      headerHozAlign: "left",
+    },
 
     cellEdited: async function (cell) {
       console.log("cellEdited triggered");
@@ -241,37 +247,44 @@ title: Journal
 
 <!-- tabulator styyling -->
 <style>
-  /* Make column headers and cell data left-aligned */
-  .tabulator .tabulator-cell,
-  .tabulator .tabulator-col .tabulator-col-content {
-    justify-content: flex-start;
-    text-align: left;
-  }
-
-  /* Optional: reduce font size */
+  /* Font, spacing, and text size */
   .tabulator {
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    font-size: 14px;
+    line-height: 1.4;
+    border-radius: 6px;
+  }
+
+  /* Reduce padding to make rows thinner */
+  .tabulator-row {
+    padding-top: 4px;
+    padding-bottom: 4px;
+  }
+
+  /* Optional: soften border color */
+  .tabulator .tabulator-cell {
+    border-color: #e0e0e0;
+  }
+
+  /* Make header a bit tighter and bold */
+  .tabulator .tabulator-col {
+    font-weight: 600;
     font-size: 13px;
+    background-color: #f8f9fa; /* soft light gray */
   }
 
-  
-  /* For all Tabulator cells */
-  .tabulator-cell {
-    padding: 4px 8px;
-    box-sizing: border-box;
-    text-align: left; /* or whatever you want */
+  /* Slight hover effect for rows */
+  .tabulator-row:hover {
+      background-color: #f1f3f5;
+      transition: background-color 0.15s ease-in-out;
   }
 
-  /* For the editor input inside the cell */
-  .tabulator-cell input {
-    width: 100% !important;
+  .tabulator-cell input, .tabulator-cell select {
+    font-size: 14px;
+    padding: 2px 6px;
     height: 100%;
-    padding: 4px 8px;
+    width: 100%;
     box-sizing: border-box;
-    font-family: inherit;
-    font-size: inherit;
-    border: none; /* or match normal cell border */
-    margin: 0;
-    text-align: inherit;
   }
 
 </style>
