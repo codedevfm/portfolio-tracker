@@ -235,3 +235,26 @@ title: Journal
 
   loadData();
 </script>
+
+
+
+<!-- tabulator styyling -->
+<style>
+  /* Make column headers and cell data left-aligned */
+  .tabulator .tabulator-cell,
+  .tabulator .tabulator-col .tabulator-col-content {
+    justify-content: flex-start;
+    text-align: left;
+  }
+
+  /* Optional: smaller padding for a tighter look */
+  .tabulator .tabulator-cell,
+  .tabulator .tabulator-col {
+    padding: 4px 6px;
+  }
+
+  /* Optional: reduce font size */
+  .tabulator {
+    font-size: 13px;
+  }
+</style>
