@@ -254,18 +254,21 @@ title: Journal
 <!-- tabulator styyling -->
 <style>
   /* Font, spacing, and text size */
+  /*
   .tabulator {
     font-family: 'Inter', 'Segoe UI', sans-serif;
     font-size: 13px;
     line-height: 1.0;
     border-radius: 6px;
   }
+  */
 
   /* Reduce padding to make rows thinner */
-  .tabulator-row {
+  /*.tabulator-row {
     /* padding-top: 4px;
     /* padding-bottom: 4px;
   }
+  */
 
   /* Optional: soften border color */
   .tabulator .tabulator-cell {
@@ -288,16 +291,28 @@ title: Journal
       /* transition: background-color 0.15s ease-in-out; */
   }
 
-  .tabulator-cell input, .tabulator-cell select {
+  /* Cell view mode */
+  .tabulator .tabulator-cell {
     font-size: 13px;
-    padding: 2px 6px;
-    height: 100%;
-    width: 100%;
+    padding: 4px 6px !important;
     box-sizing: border-box;
     vertical-align: middle;
+    line-height: 1.4;
   }
 
+  /* Input/select edit mode */
+    .tabulator-cell input, .tabulator-cell select {
+      font-size: 13px;
+      padding: 4px 6px;
+      height: 100%;
+      width: 100%;
+      box-sizing: border-box;
+      line-height: 1.4;
+      vertical-align: middle;
+      border: none;
+      outline: none;
+    }
+
+
   
-
 </style>
-
