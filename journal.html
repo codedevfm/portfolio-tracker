@@ -249,107 +249,151 @@ title: Journal
 
 
 <!-- tabulator styling -->
+
 <style>
-/* Global body font for better consistency */
-body {
-    font-family: "Inter", sans-serif;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px;
-    background-color: #f0f2f5;
-}
+    /* Global Styles for a Modern Look */
+    body {
+        font-family: "Inter", sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+        background-color: #f8f8f8;
+        margin: 0;
+        min-height: 100vh;
+        box-sizing: border-box;
+    }
 
-/* Container for the table */
-#table-container {
-    max-width: 800px;
-    width: 100%;
-    margin-bottom: 20px;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    background-color: #ffffff;
-}
+    /* Container for the table */
+    #table-container {
+        max-width: 800px;
+        width: 100%;
+        margin-bottom: 20px;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+        background-color: #ffffff;
+    }
 
-/* Normal cells */
-.tabulator-row .tabulator-cell {
-    padding: 0 8px !important; /* No vertical padding */
-    box-sizing: border-box !important;
-    border: 1px solid transparent !important;
-    outline: 1px solid blue !important;
-    height: 40px !important;
-    line-height: 40px !important;
-    font-size: 13px !important;
-    font-family: "Inter", sans-serif !important;
-    font-weight: 400 !important; /* Explicit normal weight */
-    vertical-align: middle !important; /* Center vertically */
-    transition: none !important; /* Disable transitions to prevent jitter */
-    overflow: hidden;
-    white-space: nowrap;
-    text-align: left !important;
-    background-color: transparent !important;
-    text-rendering: optimizeLegibility !important;
-    letter-spacing: normal !important;
-    word-spacing: normal !important;
-    text-indent: 0 !important; /* Ensure no indent */
-}
+    /* Reset Tabulator Table Styling */
+    .tabulator {
+        border: none !important;
+        font-family: "Inter", sans-serif;
+        font-size: 14px;
+        color: #333;
+        display: table !important;
+        width: 100% !important;
+        table-layout: fixed !important;
+    }
 
-/* Column Headers Content Wrapper Alignment */
-.tabulator .tabulator-header .tabulator-col .tabulator-col-content {
-    padding: 0 8px !important; /* Apply padding to the content wrapper */
-    box-sizing: border-box !important; /* Ensure consistent box model */
-    text-align: left !important; /* Ensure alignment for the content wrapper */
-    height: 40px !important; /* Match height of data cells for vertical consistency */
-    display: flex; /* Use flexbox for robust vertical centering within the header content */
-    align-items: center;
-}
+    /* Table Header Styling */
+    .tabulator .tabulator-header {
+        background-color: #eef1f6 !important;
+        border-bottom: 2px solid #e0e0e0 !important;
+        border-radius: 10px 10px 0 0;
+        display: table-header-group !important;
+    }
 
-/* Column Headers Title (text inside content wrapper) */
-.tabulator .tabulator-header .tabulator-col .tabulator-col-content .tabulator-col-title {
-    /* These properties are now largely managed by the parent .tabulator-col-content flex container */
-    line-height: normal !important; /* Allow natural line height */
-    vertical-align: middle !important; /* Redundant due to flex, but good for fallback */
-    flex-grow: 1; /* Allow title to grow and fill space */
-}
+    .tabulator .tabulator-header .tabulator-col {
+        display: table-cell !important;
+        background-color: transparent !important;
+        border-right: none !important;
+        box-sizing: border-box !important;
+        padding: 0 15px !important;
+        height: 40px !important;
+        line-height: 40px !important;
+        vertical-align: middle !important;
+        font-size: 14px !important;
+        font-weight: 600 !important;
+        color: #555 !important;
+        text-align: left !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        float: none !important; /* Prevent floating */
+    }
 
-/* Inputs/selects inside editable cells */
-.tabulator-cell.tabulator-editable input,
-.tabulator-cell.tabulator-editable select {
-    padding: 0 8px !important; /* Match cell padding exactly */
-    margin: 0 !important; /* No margins */
-    border: none !important;
-    outline: none !important;
-    width: 100% !important;
-    height: 40px !important; /* Match cell height */
-    box-sizing: border-box !important;
-    font-size: 13px !important;
-    font-family: "Inter", sans-serif !important;
-    font-weight: 400 !important; /* Match font weight */
-    background-color: transparent !important;
-    line-height: 40px !important; /* Match line height */
-    vertical-align: middle !important; /* Match vertical alignment */
-    text-align: left !important; /* Match text alignment */
-    text-indent: 0 !important; /* No text indent */
-    text-rendering: optimizeLegibility !important;
-    letter-spacing: normal !important;
-    word-spacing: normal !important;
-    -webkit-appearance: none !important;
-    -moz-appearance: none !important;
-    appearance: none !important; /* Remove all browser-specific styling */
-    position: absolute !important; /* Lock input position */
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important; /* Fill entire cell */
-}
+    /* Explicit column widths */
+    .tabulator .tabulator-header .tabulator-col:nth-child(1) {
+        width: 60px !important;
+    }
+    .tabulator .tabulator-header .tabulator-col:nth-child(2) {
+        width: 150px !important;
+    }
+    .tabulator .tabulator-header .tabulator-col:nth-child(3) {
+        width: 80px !important;
+    }
 
-/* Ensure editable cell is positioned relatively to contain absolute input */
-.tabulator-cell.tabulator-editable {
-    position: relative !important; /* Contain absolute-positioned input */
-}
+    /* Row Styling */
+    .tabulator-row {
+        background-color: #ffffff;
+        border-bottom: 1px solid #f0f0f0 !important;
+        display: table-row !important;
+    }
 
-/* Removed Style for selected rows as selection is not active */
-.tabulator-row.tabulator-selected {
-    background-color: transparent !important;
-}
+    .tabulator-row:last-child {
+        border-bottom: none !important;
+    }
+
+    .tabulator-row:hover {
+        background-color: #f5f5f5 !important;
+    }
+
+    /* Normal cells */
+    .tabulator-row .tabulator-cell {
+        padding: 0 15px !important;
+        box-sizing: border-box !important;
+        border: none !important;
+        height: 40px !important;
+        line-height: 40px !important;
+        font-size: 14px !important;
+        font-family: "Inter", sans-serif !important;
+        font-weight: 400 !important;
+        vertical-align: middle !important;
+        background-color: transparent !important;
+        text-align: left !important;
+        text-indent: 0 !important;
+        display: table-cell !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* Inputs/selects inside editable cells */
+    .tabulator-cell.tabulator-editable input,
+    .tabulator-cell.tabulator-editable select {
+        padding: 0 15px !important;
+        margin: 0 !important;
+        border: none !important;
+        outline: none !important;
+        width: 100% !important;
+        height: 40px !important;
+        box-sizing: border-box !important;
+        font-size: 14px !important;
+        font-family: "Inter", sans-serif !important;
+        font-weight: 400 !important;
+        background-color: transparent !important;
+        line-height: 40px !important;
+        vertical-align: middle !important;
+        text-align: left !important;
+        text-indent: 0 !important;
+        -webkit-appearance: none !important;
+        -moz-appearance: none !important;
+        appearance: none !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+    }
+
+    /* Ensure editable cell is positioned relatively */
+    .tabulator-cell.tabulator-editable {
+        position: relative !important;
+    }
+
+    /* Remove selection background */
+    .tabulator-row.tabulator-selected {
+        background-color: transparent !important;
+    }
 </style>
