@@ -250,12 +250,33 @@ title: Journal
 
 <!-- tabulator styling -->
 <style>
-  /* Normal cells */
-  .tabulator-row .tabulator-cell {
+/* Global body font for better consistency */
+body {
+    font-family: "Inter", sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    background-color: #f0f2f5;
+}
+
+/* Container for the table */
+#table-container {
+    max-width: 800px;
+    width: 100%;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    background-color: #ffffff;
+}
+
+/* Normal cells */
+.tabulator-row .tabulator-cell {
     padding: 0 8px !important; /* No vertical padding */
     box-sizing: border-box !important;
     border: 1px solid transparent !important;
-    outline: 1px solid transparent !important;
+    outline: 1px solid blue !important;
     height: 40px !important;
     line-height: 40px !important;
     font-size: 13px !important;
@@ -271,11 +292,29 @@ title: Journal
     letter-spacing: normal !important;
     word-spacing: normal !important;
     text-indent: 0 !important; /* Ensure no indent */
-  }
+}
 
-  /* Inputs/selects inside editable cells */
-  .tabulator-cell.tabulator-editable input,
-  .tabulator-cell.tabulator-editable select {
+/* Column Headers Content Wrapper Alignment */
+.tabulator .tabulator-header .tabulator-col .tabulator-col-content {
+    padding: 0 8px !important; /* Apply padding to the content wrapper */
+    box-sizing: border-box !important; /* Ensure consistent box model */
+    text-align: left !important; /* Ensure alignment for the content wrapper */
+    height: 40px !important; /* Match height of data cells for vertical consistency */
+    display: flex; /* Use flexbox for robust vertical centering within the header content */
+    align-items: center;
+}
+
+/* Column Headers Title (text inside content wrapper) */
+.tabulator .tabulator-header .tabulator-col .tabulator-col-content .tabulator-col-title {
+    /* These properties are now largely managed by the parent .tabulator-col-content flex container */
+    line-height: normal !important; /* Allow natural line height */
+    vertical-align: middle !important; /* Redundant due to flex, but good for fallback */
+    flex-grow: 1; /* Allow title to grow and fill space */
+}
+
+/* Inputs/selects inside editable cells */
+.tabulator-cell.tabulator-editable input,
+.tabulator-cell.tabulator-editable select {
     padding: 0 8px !important; /* Match cell padding exactly */
     margin: 0 !important; /* No margins */
     border: none !important;
@@ -302,22 +341,15 @@ title: Journal
     left: 0 !important;
     right: 0 !important;
     bottom: 0 !important; /* Fill entire cell */
-  }
+}
 
-  /* Ensure editable cell is positioned relatively to contain absolute input */
-  .tabulator-cell.tabulator-editable {
-      position: relative !important; /* Contain absolute-positioned input */
-  }
+/* Ensure editable cell is positioned relatively to contain absolute input */
+.tabulator-cell.tabulator-editable {
+    position: relative !important; /* Contain absolute-positioned input */
+}
 
-  /* Hover highlight for rows */
-  .tabulator-row:hover {
-      background-color: #f5f5f5 !important; /* Subtle gray highlight on hover */
-  }
-
-  /* Removed Style for selected rows as selection is not active */
-  .tabulator-row.tabulator-selected {
-      background-color: transparent !important;
-  }
-
-
+/* Removed Style for selected rows as selection is not active */
+.tabulator-row.tabulator-selected {
+    background-color: transparent !important;
+}
 </style>
