@@ -18,7 +18,11 @@ title: Journal
 <div id="journal-table" class="ag-theme-alpine" style="height: 500px; width: 100%; max-width: 800px; margin: 0 auto;"></div>
 
 <script>
-  // ✅ Your Supabase details
+  function logWithTimestamp(...args) {
+    const now = new Date().toISOString();
+    console.log(`[${now}]`, ...args);
+  }
+
   const supabaseUrl = "https://dibljhwqxxsvdwrzhchk.supabase.co";
   const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpYmxqaHdxeHhzdmR3cnpoY2hrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkyMzgwOTAsImV4cCI6MjA2NDgxNDA5MH0.qcbOKHlDjua_ijVa_3mvnfjbZCl1wROJDtZ4naeZZko";
   const { createClient } = window.supabase;
@@ -27,19 +31,17 @@ title: Journal
   const USER_ID = "00000000-0000-0000-0000-000000000000";
   const ACTIVITY_TYPES = ["Buy", "Sell", "Dividend", "Split", "Interest", "Fee", "Other"];
 
-  // ✅ AG Grid setup
   let gridApi;
 
   const gridOptions = {
+    getRowId: params => params.data.id,
     columnDefs: [
       { field: "id", hide: true, editable: false },
       {
         field: "activity_type",
         editable: true,
         cellEditor: "agSelectCellEditor",
-        cellEditorParams: {
-          values: ACTIVITY_TYPES,
-        },
+        cellEditorParams: { values: ACTIVITY_TYPES },
         valueFormatter: params => params.value || "",
       },
       { field: "symbol", editable: true },
@@ -56,59 +58,63 @@ title: Journal
       resizable: true,
     },
     pagination: false,
-    //paginationPageSize: 5,
-    //paginationPageSizeSelector: [5, 15, "All"],
     animateRows: true,
     onGridReady: (params) => {
       gridApi = params.api;
-      loadData(); // Load data only after grid is ready
+      loadData("initial");
     },
     onCellValueChanged: async (params) => {
-      console.log("cellEdited triggered");
       const rowData = params.data;
 
-      // Ensure ID exists
       if (!rowData.id) {
         rowData.id = crypto.randomUUID();
         params.node.setDataValue("id", rowData.id);
       }
 
-      // Inject user ID if missing
       if (!rowData.user_id) {
         rowData.user_id = USER_ID;
         params.node.setDataValue("user_id", USER_ID);
       }
 
-      // Auto-fill inserted_at on first edit
       if (!rowData.inserted_at) {
         rowData.inserted_at = new Date().toISOString();
         params.node.setDataValue("inserted_at", rowData.inserted_at);
       }
 
-      // Upsert to Supabase
+      logWithTimestamp("⬆️ Update pushed to database:", rowData);
+
       const { error } = await supabase
         .from("journal")
         .upsert([rowData], { onConflict: "id" });
 
       if (error) {
-        console.error("Supabase upsert error:", error.message);
+        logWithTimestamp("❌ Supabase upsert error:", error.message);
       } else {
-        console.log("Row saved successfully:", rowData);
-        loadData(); // Refresh data from Supabase
+        logWithTimestamp("✅ Row saved to Supabase successfully.");
       }
     },
     onRowDataUpdated: (params) => {
-      // Ensure one empty row is present
-      if (gridApi.getDisplayedRowCount() === 0 || !gridApi.getDisplayedRowAtIndex(gridApi.getDisplayedRowCount() - 1).data.user_id) {
+      const lastRow = gridApi.getDisplayedRowAtIndex(gridApi.getDisplayedRowCount() - 1);
+      if (!lastRow || !lastRow.data || !lastRow.data.user_id) {
         gridApi.applyTransaction({ add: [{ user_id: USER_ID }] });
       }
     },
   };
 
-  // ✅ Load from Supabase
-  async function loadData() {
+  async function updateRowInGrid(updatedRow) {
+    const nodeToUpdate = gridApi.getRowNode(updatedRow.id);
+    if (nodeToUpdate) {
+      nodeToUpdate.setData(updatedRow);
+      logWithTimestamp("🔄 Updated row in grid:", updatedRow);
+    } else {
+      gridApi.applyTransaction({ add: [updatedRow] });
+      logWithTimestamp("➕ Added new row to grid:", updatedRow);
+    }
+  }
+
+  async function loadData(source = "manual") {
     if (!gridApi) {
-      console.error("gridApi is not initialized. Ensure grid is ready.");
+      logWithTimestamp("gridApi is not initialized. Ensure grid is ready.");
       return;
     }
 
@@ -119,30 +125,69 @@ title: Journal
       .order("trade_date", { ascending: false });
 
     if (error) {
-      console.error("❌ Supabase fetch error:", error.message);
+      logWithTimestamp(`[${source}] ❌ Supabase fetch error:`, error.message);
       return;
     }
 
-    console.log("🧾 Data loaded from Supabase:");
+    logWithTimestamp(`[${source}] ⬇️ Update received from database.`);
     console.table(data);
 
-    // Patch: Add ID if missing
-    const patchedData = data.map(row => {
-      if (!row.id) {
-        row.id = crypto.randomUUID();
-      }
-      return row;
-    });
-
-    gridApi.setRowData(patchedData);
+    for (const row of data) {
+      if (!row.id) continue;
+      updateRowInGrid(row);
+    }
   }
 
-  // Initialize AG Grid
-  document.addEventListener("DOMContentLoaded", () => {
-    if (typeof agGrid === "undefined") {
-      console.error("AG Grid is not loaded. Check the script URL.");
+  async function fetchAndUpdateRowById(id, source = "manual") {
+    const { data, error } = await supabase
+      .from("journal")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (error || !data) {
+      logWithTimestamp(`[${source}] ❌ Could not fetch updated row with id=${id}:`, error?.message || "Unknown error");
       return;
     }
+
+    logWithTimestamp(`[${source}] ⬇️ Fetched updated row data from database, applying to grid.`);
+    updateRowInGrid(data);
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    if (typeof agGrid === "undefined") {
+      logWithTimestamp("AG Grid is not loaded. Check the script URL.");
+      return;
+    }
+
     new agGrid.Grid(document.querySelector("#journal-table"), gridOptions);
+
+    supabase
+      .channel("journal_changes")
+      .on("postgres_changes", { event: "*", schema: "public", table: "journal" }, (payload) => {
+        logWithTimestamp("📡 Realtime notification received from Supabase:", payload.eventType);
+
+        const id = payload.new?.id || payload.old?.id;
+        if (!id) {
+          logWithTimestamp("⚠️ Received realtime update but no id was found in payload:", payload);
+          return;
+        }
+
+        if (payload.eventType === "DELETE") {
+          const nodeToRemove = gridApi.getRowNode(id);
+          if (nodeToRemove) {
+            gridApi.applyTransaction({ remove: [nodeToRemove.data] });
+            logWithTimestamp(`[realtime] ⬇️ Row deleted from database, removed from grid:`, nodeToRemove.data);
+          } else {
+            logWithTimestamp(`[realtime] ⬇️ Row deleted but not found in grid: id=${id}`);
+          }
+        } else if (payload.new) {
+          logWithTimestamp(`[realtime] ⬇️ Row updated in database, applying to grid.`);
+          updateRowInGrid(payload.new);
+        } else {
+          fetchAndUpdateRowById(id, "realtime");
+        }
+      })
+      .subscribe();
   });
 </script>
