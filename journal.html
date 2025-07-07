@@ -40,6 +40,21 @@ title: Journal
 </div>
 
 <script>
+  console.log("✅ Script started loading");
+  console.log("✅ agGrid present:", typeof agGrid !== "undefined");
+  console.log("✅ Supabase present:", typeof window.supabase !== "undefined");
+
+  const tableEl = document.querySelector("#journal-table");
+  if (tableEl) {
+    console.log("📏 Table container size:", {
+      width: tableEl.offsetWidth,
+      height: tableEl.offsetHeight,
+    });
+  }
+
+  const stylesheets = [...document.styleSheets].map(s => s.href);
+  console.log("🧩 Stylesheets loaded:", stylesheets);
+
   function logWithTimestamp(...args) {
     const now = new Date().toISOString();
     console.log(`[${now}]`, ...args);
