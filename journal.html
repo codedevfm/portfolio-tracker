@@ -5,15 +5,21 @@ title: Journal
 
 <style>
   html, body {
-    height: 100%;
     margin: 0;
+    padding: 0;
+    height: 100%;
     overflow: hidden;
   }
   #journal-wrapper {
-    height: calc(100% - 3rem);
     max-width: 1200px;
     margin: 0 auto;
+    padding-bottom: 3rem;
+    height: calc(100% - 3rem);
     overflow-y: auto;
+  }
+  #journal-table {
+    height: 100%;
+    width: 100%;
   }
 </style>
 
@@ -30,7 +36,7 @@ title: Journal
 <script src="https://cdn.jsdelivr.net/npm/ag-grid-community@30.2.0/dist/ag-grid-community.min.js"></script>
 
 <div id="journal-wrapper">
-  <div id="journal-table" class="ag-theme-alpine" style="height: 100%; width: 100%;"></div>
+  <div id="journal-table" class="ag-theme-alpine"></div>
 </div>
 
 <script>
