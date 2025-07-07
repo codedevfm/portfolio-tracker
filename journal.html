@@ -15,7 +15,7 @@ title: Journal
 <!-- AG Grid JS -->
 <script src="https://cdn.jsdelivr.net/npm/ag-grid-community@30.2.0/dist/ag-grid-community.min.js"></script>
 
-<div id="journal-table" class="ag-theme-alpine" style="height: 500px; width: 100%; max-width: 800px; margin: 0 auto;"></div>
+<div id="journal-table" class="ag-theme-alpine" style="height: 500px; width: 100%; max-width: 1200px; margin: 0 auto;"></div>
 
 <script>
   function logWithTimestamp(...args) {
@@ -46,9 +46,9 @@ title: Journal
       },
       { field: "symbol", editable: true },
       { field: "trade_date", editable: true },
-      { field: "quantity", editable: true, valueParser: "number" },
-      { field: "price", editable: true, valueParser: "number" },
-      { field: "fee", editable: true, valueParser: "number" },
+      { field: "quantity", editable: true, valueParser: "number", cellClass: "ag-right-aligned-cell" },
+      { field: "price", editable: true, valueParser: "number", cellClass: "ag-right-aligned-cell" },
+      { field: "fee", editable: true, valueParser: "number", cellClass: "ag-right-aligned-cell" },
       { field: "note", editable: true },
       { field: "inserted_at", editable: false },
     ],
@@ -56,11 +56,18 @@ title: Journal
       filter: true,
       sortable: true,
       resizable: true,
+      flex: 1,
+      minWidth: 100,
     },
     pagination: false,
     animateRows: true,
+    domLayout: "autoHeight",
+    singleClickEdit: true,
+    stopEditingWhenCellsLoseFocus: true,
     onGridReady: (params) => {
       gridApi = params.api;
+      gridApi.sizeColumnsToFit();
+      window.addEventListener('resize', () => gridApi.sizeColumnsToFit());
       loadData("initial");
     },
     onCellValueChanged: async (params) => {
