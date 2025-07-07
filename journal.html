@@ -323,7 +323,8 @@ title: Journal
     supabase
       .channel("journal_changes") // Channel name
       .on("postgres_changes", { event: "*", schema: "public", table: "journal" }, (payload) => {
-        logWithTimestamp("📡 Realtime notification:", payload.eventType);
+        // Log the event type and the new/old data for more detail
+        logWithTimestamp("📡 Realtime notification:", payload.eventType, payload.new || payload.old);
 
         const id = payload.new?.id || payload.old?.id;
         if (!id) return; // Exit if no ID is present
