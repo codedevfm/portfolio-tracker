@@ -120,7 +120,7 @@ title: Journal
         field: "quantity",
         headerName: "Quantity",
         editable: true,
-        valueParser: "Number(params.newValue)", // Parse to number
+        valueParser: params => Number(params.newValue), // Corrected: changed string to function
         cellClass: "ag-right-aligned-cell", // Align text to the right
         width: 120,
       },
@@ -128,7 +128,7 @@ title: Journal
         field: "price",
         headerName: "Price",
         editable: true,
-        valueParser: "Number(params.newValue)", // Parse to number
+        valueParser: params => Number(params.newValue), // Corrected: changed string to function
         cellClass: "ag-right-aligned-cell",
         valueFormatter: params => {
             // Format as currency
@@ -140,7 +140,7 @@ title: Journal
         field: "fee",
         headerName: "Fee",
         editable: true,
-        valueParser: "Number(params.newValue)", // Parse to number
+        valueParser: params => Number(params.newValue), // Corrected: changed string to function
         cellClass: "ag-right-aligned-cell",
         valueFormatter: params => {
             // Format as currency
