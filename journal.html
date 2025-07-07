@@ -15,8 +15,9 @@ title: Journal
     /* max-width: 1200px; /* Reverted to original max-width */
     margin: 0 auto; /* Reverted to original margin */
     padding: 0 1rem 1rem 1rem;
-    border-radius: 0.5rem; /* Rounded corners for the container */
-    overflow: hidden; /* Ensure content respects rounded corners */
+    /* Removed border-radius and overflow from container to avoid double borders */
+    /* border-radius: 0.5rem; */ 
+    /* overflow: hidden; */ 
   }
 
   #journal-table {
@@ -27,8 +28,8 @@ title: Journal
 
   /* Custom styles for AG-Grid to ensure rounded corners and better aesthetics */
   .ag-theme-alpine {
-      border-radius: 0rem; /* Rounded corners for the grid itself */
-      overflow: hidden; /* Ensure content respects rounded corners */
+      border-radius: 0.5rem; /* Ensure the grid itself has rounded corners */
+      overflow: hidden; /* Ensure content respects rounded corners within the grid */
   }
 
   /* Custom styles for AG-Grid cells for better alignment */
@@ -48,9 +49,9 @@ title: Journal
 <script src="https://cdn.jsdelivr.net/npm/ag-grid-community@30.2.0/dist/ag-grid-community.min.js"></script>
 
 <!-- The main container for the AG Grid table -->
-<!-- Reverted to the original structure for #journal-container -->
+<!-- Removed bg-white and shadow-lg from the container -->
 <h1 class="text-2xl font-bold mb-4">Journal</h1>
-<div id="journal-container" class="bg-white shadow-lg">
+<div id="journal-container">
     <div id="journal-table" class="ag-theme-alpine"></div>
 </div>
 
