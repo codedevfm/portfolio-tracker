@@ -3,6 +3,20 @@ layout: default
 title: Journal
 ---
 
+<style>
+  html, body {
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+  }
+  #journal-wrapper {
+    height: calc(100% - 3rem);
+    max-width: 1200px;
+    margin: 0 auto;
+    overflow-y: auto;
+  }
+</style>
+
 <h1 class="text-2xl font-bold mb-4">Journal</h1>
 
 <!-- AG Grid CSS -->
@@ -15,7 +29,9 @@ title: Journal
 <!-- AG Grid JS -->
 <script src="https://cdn.jsdelivr.net/npm/ag-grid-community@30.2.0/dist/ag-grid-community.min.js"></script>
 
-<div id="journal-table" class="ag-theme-alpine" style="height: 500px; width: 100%; max-width: 1200px; margin: 0 auto;"></div>
+<div id="journal-wrapper">
+  <div id="journal-table" class="ag-theme-alpine" style="height: 100%; width: 100%;"></div>
+</div>
 
 <script>
   function logWithTimestamp(...args) {
@@ -61,7 +77,6 @@ title: Journal
     },
     pagination: false,
     animateRows: true,
-    domLayout: "autoHeight",
     singleClickEdit: true,
     stopEditingWhenCellsLoseFocus: true,
     onGridReady: (params) => {
