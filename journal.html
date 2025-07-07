@@ -218,19 +218,16 @@ title: Journal
       }
     },
     onRowDataUpdated: (params) => {
-        // This callback is fired when row data is updated (e.g., setRowData or applyTransaction)
-        const rowCount = gridApi.getDisplayedRowCount();
-        // If no rows, add a new empty row for user input
-        if (rowCount === 0) {
-             gridApi.applyTransaction({ add: [{ user_id: USER_ID }] });
-             return;
-        }
-        // Check the last row. If it's not empty (i.e., has an activity_type), add a new empty row.
-        const lastRowNode = gridApi.getDisplayedRowAtIndex(rowCount - 1);
-        const lastRowData = lastRowNode.data;
-        if (lastRowData && lastRowData.activity_type) {
-            gridApi.applyTransaction({ add: [{ user_id: USER_ID }] });
-        }
+        // Removed the logic that adds an empty row at the end
+        // if (rowCount === 0) {
+        //      gridApi.applyTransaction({ add: [{ user_id: USER_ID }] });
+        //      return;
+        // }
+        // const lastRowNode = gridApi.getDisplayedRowAtIndex(rowCount - 1);
+        // const lastRowData = lastRowNode.data;
+        // if (lastRowData && lastRowData.activity_type) {
+        //     gridApi.applyTransaction({ add: [{ user_id: USER_ID }] });
+        // }
     },
   };
 
@@ -278,8 +275,8 @@ title: Journal
     
     // Set the fetched data to the grid
     gridApi.setRowData(data);
-    // Add an empty row at the bottom for new entries
-    gridApi.applyTransaction({ add: [{ user_id: USER_ID }] });
+    // Removed the logic that adds an empty row after loading data
+    // gridApi.applyTransaction({ add: [{ user_id: USER_ID }] });
   }
 
   /**
