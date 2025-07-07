@@ -2,323 +2,254 @@
 layout: default
 title: Journal
 ---
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Journal</title>
-    <!-- Tailwind CSS for basic styling -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- AG Grid CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-grid.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-theme-alpine.css" />
-    <style>
-      /* Basic layout and styling */
-      html, body {
-        margin: 0;
-        padding: 0;
-        height: 100%;
-        overflow: hidden; /* Prevent body scroll */
-        display: flex;
-        flex-direction: column;
-        font-family: 'Inter', sans-serif;
-        background-color: #f3f4f6;
+
+<style>
+  /* This style block is designed to work within a Jekyll layout.
+    It makes the journal container fill the available vertical space.
+  */
+  #journal-container {
+    /* Using vh (viewport height) units can be tricky inside layouts.
+      A flexbox approach is often more robust. We assume the parent
+      container of this page allows its children to grow.
+      For a simpler approach, you could try a fixed height:
+      height: 85vh; 
+    */
+    display: flex;
+    flex-direction: column;
+    height: 85vh; /* Adjust this value as needed to fit your layout */
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem 1rem 1rem;
+  }
+
+  #journal-table {
+    flex-grow: 1; /* Allows the grid to fill the container's height */
+    width: 100%;
+  }
+</style>
+
+<h1 class="text-2xl font-bold mb-4">Journal</h1>
+
+<!-- AG Grid CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-grid.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-theme-alpine.css" />
+
+<!-- Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- AG Grid JS -->
+<script src="https://cdn.jsdelivr.net/npm/ag-grid-community@30.2.0/dist/ag-grid-community.min.js"></script>
+
+<!-- The main container for the AG Grid table -->
+<div id="journal-container">
+  <div id="journal-table" class="ag-theme-alpine"></div>
+</div>
+
+<script>
+  console.log("✅ Script started loading");
+
+  const tableEl = document.querySelector("#journal-table");
+
+  function logWithTimestamp(...args) {
+    const now = new Date().toISOString();
+    console.log(`[${now}]`, ...args);
+  }
+  
+  // --- Supabase and Grid Configuration ---
+
+  const supabaseUrl = "https://dibljhwqxxsvdwrzhchk.supabase.co";
+  const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpYmxqaHdxeHhzdmR3cnpoY2hrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkyMzgwOTAsImV4cCI6MjA2NDgxNDA5MH0.qcbOKHlDjua_ijVa_3mvnfjbZCl1wROJDtZ4naeZZko";
+  const { createClient } = window.supabase;
+  const supabase = createClient(supabaseUrl, supabaseKey);
+
+  // A mock user ID. In a real app, this would come from an authentication system.
+  const USER_ID = "00000000-0000-0000-0000-000000000000";
+  const ACTIVITY_TYPES = ["Buy", "Sell", "Dividend", "Split", "Interest", "Fee", "Other"];
+
+  let gridApi;
+
+  // AG Grid options
+  const gridOptions = {
+    getRowId: params => params.data.id,
+    columnDefs: [
+      { field: "id", hide: true, editable: false },
+      {
+        field: "activity_type",
+        editable: true,
+        cellEditor: "agSelectCellEditor",
+        cellEditorParams: { values: ACTIVITY_TYPES },
+        valueFormatter: params => params.value || "",
+      },
+      { field: "symbol", editable: true },
+      { field: "trade_date", editable: true, cellEditor: 'agDateCellEditor' },
+      { field: "quantity", editable: true, valueParser: "Number(params.newValue)", cellClass: "ag-right-aligned-cell" },
+      { field: "price", editable: true, valueParser: "Number(params.newValue)", cellClass: "ag-right-aligned-cell" },
+      { field: "fee", editable: true, valueParser: "Number(params.newValue)", cellClass: "ag-right-aligned-cell" },
+      { field: "note", editable: true },
+      { field: "inserted_at", editable: false, headerName: 'Created At' },
+    ],
+    defaultColDef: {
+      filter: true,
+      sortable: true,
+      resizable: true,
+      flex: 1,
+      minWidth: 120,
+    },
+    pagination: false,
+    animateRows: true,
+    singleClickEdit: true,
+    stopEditingWhenCellsLoseFocus: true,
+    onGridReady: (params) => {
+      gridApi = params.api;
+      gridApi.sizeColumnsToFit();
+      window.addEventListener('resize', () => gridApi.sizeColumnsToFit());
+      loadData("initial");
+    },
+    onCellValueChanged: async (params) => {
+      const rowData = { ...params.data };
+
+      if (!rowData.id) {
+        rowData.id = crypto.randomUUID();
       }
-
-      h1 {
-        margin: 1rem;
-        color: #111827;
+      if (!rowData.user_id) {
+        rowData.user_id = USER_ID;
       }
-
-      /* Wrapper for the grid to control its size and scrolling */
-      #journal-wrapper {
-        flex: 1 1 auto; /* Allow wrapper to grow and shrink */
-        width: 100%;
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 0 1rem 1rem 1rem;
-        display: flex;
-        flex-direction: column;
-      }
-
-      /* The grid itself */
-      #journal-table {
-        height: 100%; /* Fill the wrapper's height */
-        width: 100%;
-      }
-    </style>
-</head>
-<body class="bg-gray-100">
-
-    <h1 class="text-2xl font-bold mb-4 mx-auto px-4 pt-4">Journal</h1>
-
-    <!-- AG Grid will be created here -->
-    <div id="journal-wrapper">
-      <div id="journal-table" class="ag-theme-alpine"></div>
-    </div>
-
-    <!-- Supabase -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-    <!-- AG Grid JS -->
-    <script src="https://cdn.jsdelivr.net/npm/ag-grid-community@30.2.0/dist/ag-grid-community.min.js"></script>
-
-    <script>
-      console.log("✅ Script started loading");
-      console.log("✅ agGrid present:", typeof agGrid !== "undefined");
-      console.log("✅ Supabase present:", typeof window.supabase !== "undefined");
-
-      const tableEl = document.querySelector("#journal-table");
-      if (tableEl) {
-        const logContainerSize = () => {
-          console.log("📏 Table container size:", {
-            width: tableEl.offsetWidth,
-            height: tableEl.offsetHeight,
-          });
-          const computed = getComputedStyle(tableEl);
-          console.log("📐 Computed height of table:", computed.height);
-        };
-        logContainerSize();
-        window.addEventListener("resize", logContainerSize);
-      }
-
-      const stylesheets = [...document.styleSheets].map(s => s.href);
-      console.log("🧩 Stylesheets loaded:", stylesheets);
-
-      function logWithTimestamp(...args) {
-        const now = new Date().toISOString();
-        console.log(`[${now}]`, ...args);
+      if (!rowData.inserted_at) {
+        rowData.inserted_at = new Date().toISOString();
       }
       
-      // --- Supabase and Grid Configuration ---
+      rowData.updated_at = new Date().toISOString();
 
-      // IMPORTANT: Replace with your Supabase URL and Anon Key
-      const supabaseUrl = "https://dibljhwqxxsvdwrzhchk.supabase.co";
-      const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpYmxqaHdxeHhzdmR3cnpoY2hrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkyMzgwOTAsImV4cCI6MjA2NDgxNDA5MH0.qcbOKHlDjua_ijVa_3mvnfjbZCl1wROJDtZ4naeZZko";
-      const { createClient } = window.supabase;
-      const supabase = createClient(supabaseUrl, supabaseKey);
+      logWithTimestamp("⬆️ Upserting row to database:", rowData);
 
-      // A mock user ID. In a real app, this would come from an authentication system.
-      const USER_ID = "00000000-0000-0000-0000-000000000000";
-      const ACTIVITY_TYPES = ["Buy", "Sell", "Dividend", "Split", "Interest", "Fee", "Other"];
+      const { error } = await supabase
+        .from("journal")
+        .upsert([rowData], { onConflict: "id" });
 
-      let gridApi;
+      if (error) {
+        logWithTimestamp("❌ Supabase upsert error:", error.message);
+      } else {
+        logWithTimestamp("✅ Row saved to Supabase successfully.");
+        fetchAndUpdateRowById(rowData.id, 'after-upsert');
+      }
+    },
+    onRowDataUpdated: (params) => {
+        const rowCount = gridApi.getDisplayedRowCount();
+        if (rowCount === 0) {
+             gridApi.applyTransaction({ add: [{ user_id: USER_ID }] });
+             return;
+        }
+        const lastRowNode = gridApi.getDisplayedRowAtIndex(rowCount - 1);
+        const lastRowData = lastRowNode.data;
+        if (lastRowData && lastRowData.activity_type) {
+            gridApi.applyTransaction({ add: [{ user_id: USER_ID }] });
+        }
+    },
+  };
 
-      // AG Grid options
-      const gridOptions = {
-        getRowId: params => params.data.id,
-        columnDefs: [
-          { field: "id", hide: true, editable: false },
-          {
-            field: "activity_type",
-            editable: true,
-            cellEditor: "agSelectCellEditor",
-            cellEditorParams: { values: ACTIVITY_TYPES },
-            valueFormatter: params => params.value || "",
-          },
-          { field: "symbol", editable: true },
-          { field: "trade_date", editable: true, cellEditor: 'agDateCellEditor' },
-          { field: "quantity", editable: true, valueParser: "Number(params.newValue)", cellClass: "ag-right-aligned-cell" },
-          { field: "price", editable: true, valueParser: "Number(params.newValue)", cellClass: "ag-right-aligned-cell" },
-          { field: "fee", editable: true, valueParser: "Number(params.newValue)", cellClass: "ag-right-aligned-cell" },
-          { field: "note", editable: true },
-          { field: "inserted_at", editable: false, headerName: 'Created At' },
-        ],
-        defaultColDef: {
-          filter: true,
-          sortable: true,
-          resizable: true,
-          flex: 1,
-          minWidth: 120,
-        },
-        pagination: false,
-        animateRows: true,
-        singleClickEdit: true,
-        stopEditingWhenCellsLoseFocus: true,
-        onGridReady: (params) => {
-          gridApi = params.api;
-          // Wait for the grid to be visible before sizing columns
-          const waitForVisibleGrid = () => {
-            if (tableEl.offsetWidth === 0) {
-              setTimeout(waitForVisibleGrid, 100);
-            } else {
-              gridApi.sizeColumnsToFit();
-            }
-          };
-          waitForVisibleGrid();
-          window.addEventListener('resize', () => gridApi.sizeColumnsToFit());
-          loadData("initial");
-        },
-        onCellValueChanged: async (params) => {
-          const rowData = { ...params.data };
+  /**
+   * Updates or adds a row in the grid.
+   */
+  function updateRowInGrid(updatedRow) {
+    if (!gridApi) return;
+    const nodeToUpdate = gridApi.getRowNode(updatedRow.id);
+    if (nodeToUpdate) {
+      nodeToUpdate.setData(updatedRow);
+    } else {
+      gridApi.applyTransaction({ add: [updatedRow] });
+    }
+  }
 
-          // If it's a new row, generate necessary fields
-          if (!rowData.id) {
-            rowData.id = crypto.randomUUID();
+  /**
+   * Loads all journal entries for the current user.
+   */
+  async function loadData(source = "manual") {
+    if (!gridApi) {
+      logWithTimestamp("gridApi is not initialized.");
+      return;
+    }
+
+    logWithTimestamp(`[${source}] ⏳ Loading data...`);
+    const { data, error } = await supabase
+      .from("journal")
+      .select("*")
+      .eq("user_id", USER_ID)
+      .order("trade_date", { ascending: false, nullsFirst: false });
+
+    if (error) {
+      logWithTimestamp(`[${source}] ❌ Supabase fetch error:`, error.message);
+      return;
+    }
+
+    logWithTimestamp(`[${source}] ⬇️ Received ${data.length} rows.`);
+    
+    gridApi.setRowData(data);
+    gridApi.applyTransaction({ add: [{ user_id: USER_ID }] });
+  }
+
+  /**
+   * Fetches a single row by ID to update the grid.
+   */
+  async function fetchAndUpdateRowById(id, source = "manual") {
+    const { data, error } = await supabase
+      .from("journal")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (error || !data) {
+      logWithTimestamp(`[${source}] ❌ Could not fetch row id=${id}:`, error?.message || "Not found");
+      return;
+    }
+    
+    updateRowInGrid(data);
+  }
+  
+  // --- Initialization and Real-time Subscription ---
+
+  // Ensure AG Grid is ready before creating the grid
+  const initializeGrid = () => {
+    if (typeof agGrid === "undefined" || !document.querySelector("#journal-table")) {
+      logWithTimestamp("AG Grid or table element not ready, retrying...");
+      setTimeout(initializeGrid, 100);
+      return;
+    }
+    
+    new agGrid.Grid(document.querySelector("#journal-table"), gridOptions);
+
+    // Set up Supabase real-time subscription
+    supabase
+      .channel("journal_changes")
+      .on("postgres_changes", { event: "*", schema: "public", table: "journal" }, (payload) => {
+        logWithTimestamp("📡 Realtime notification:", payload.eventType);
+
+        const id = payload.new?.id || payload.old?.id;
+        if (!id) return;
+        
+        if (payload.new?.user_id !== USER_ID && payload.old?.user_id !== USER_ID) {
+            return;
+        }
+
+        if (payload.eventType === "DELETE") {
+          const nodeToRemove = gridApi.getRowNode(id);
+          if (nodeToRemove) {
+            gridApi.applyTransaction({ remove: [nodeToRemove.data] });
           }
-          if (!rowData.user_id) {
-            rowData.user_id = USER_ID;
-          }
-          if (!rowData.inserted_at) {
-            rowData.inserted_at = new Date().toISOString();
-          }
-          
-          rowData.updated_at = new Date().toISOString();
-
-          logWithTimestamp("⬆️ Upserting row to database:", rowData);
-
-          const { error } = await supabase
-            .from("journal")
-            .upsert([rowData], { onConflict: "id" });
-
-          if (error) {
-            logWithTimestamp("❌ Supabase upsert error:", error.message);
-            // Optionally, revert the change in the grid or show an error to the user
+        } else if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+          updateRowInGrid(payload.new);
+        }
+      })
+      .subscribe((status, err) => {
+          if (status === 'SUBSCRIBED') {
+              logWithTimestamp('✅ Subscribed to real-time changes!');
           } else {
-            logWithTimestamp("✅ Row saved to Supabase successfully.");
-            // Refresh the row from the database to get the latest state (e.g., from triggers)
-            fetchAndUpdateRowById(rowData.id, 'after-upsert');
+              logWithTimestamp('❌ Failed to subscribe:', err);
           }
-        },
-        onRowDataUpdated: (params) => {
-            // Check if the last row is empty. If it is, don't add a new one.
-            // If the last row is filled, add a new empty row for data entry.
-            const rowCount = gridApi.getDisplayedRowCount();
-            if (rowCount === 0) {
-                 gridApi.applyTransaction({ add: [{ user_id: USER_ID }] });
-                 return;
-            }
-            const lastRowNode = gridApi.getDisplayedRowAtIndex(rowCount - 1);
-            const lastRowData = lastRowNode.data;
-            // A simple check to see if the row has been edited
-            if (lastRowData && lastRowData.activity_type) {
-                gridApi.applyTransaction({ add: [{ user_id: USER_ID }] });
-            }
-        },
-      };
-
-      /**
-       * Updates a row in the grid or adds it if it doesn't exist.
-       * @param {object} updatedRow - The row data to add or update.
-       */
-      function updateRowInGrid(updatedRow) {
-        if (!gridApi) return;
-        const nodeToUpdate = gridApi.getRowNode(updatedRow.id);
-        if (nodeToUpdate) {
-          nodeToUpdate.setData(updatedRow);
-          logWithTimestamp("🔄 Updated row in grid:", updatedRow);
-        } else {
-          gridApi.applyTransaction({ add: [updatedRow] });
-          logWithTimestamp("➕ Added new row to grid:", updatedRow);
-        }
-      }
-
-      /**
-       * Loads all journal entries for the current user from Supabase.
-       * @param {string} source - A label for the source of the load request (for logging).
-       */
-      async function loadData(source = "manual") {
-        if (!gridApi) {
-          logWithTimestamp("gridApi is not initialized. Ensure grid is ready.");
-          return;
-        }
-
-        logWithTimestamp(`[${source}] ⏳ Loading data from Supabase...`);
-        const { data, error } = await supabase
-          .from("journal")
-          .select("*")
-          .eq("user_id", USER_ID)
-          .order("trade_date", { ascending: false, nullsFirst: false });
-
-        if (error) {
-          logWithTimestamp(`[${source}] ❌ Supabase fetch error:`, error.message);
-          return;
-        }
-
-        logWithTimestamp(`[${source}] ⬇️ Received ${data.length} rows from database.`);
-        
-        // Set row data and add an empty row at the end for new entries
-        gridApi.setRowData(data);
-        gridApi.applyTransaction({ add: [{ user_id: USER_ID }] });
-      }
-
-      /**
-       * Fetches a single row by its ID and updates it in the grid.
-       * @param {string} id - The UUID of the row to fetch.
-       * @param {string} source - A label for the source of the request (for logging).
-       */
-      async function fetchAndUpdateRowById(id, source = "manual") {
-        const { data, error } = await supabase
-          .from("journal")
-          .select("*")
-          .eq("id", id)
-          .single();
-
-        if (error || !data) {
-          logWithTimestamp(`[${source}] ❌ Could not fetch updated row with id=${id}:`, error?.message || "Row not found");
-          return;
-        }
-        
-        logWithTimestamp(`[${source}] ⬇️ Fetched updated row data, applying to grid.`);
-        updateRowInGrid(data);
-      }
-      
-      // --- Event Listeners and Initialization ---
-
-      document.addEventListener("DOMContentLoaded", () => {
-        if (typeof agGrid === "undefined") {
-          logWithTimestamp("AG Grid is not loaded. Check the script URL.");
-          return;
-        }
-        
-        // Create the grid
-        const gridDiv = document.querySelector("#journal-table");
-        new agGrid.Grid(gridDiv, gridOptions);
-
-        // Set up Supabase real-time subscription
-        supabase
-          .channel("journal_changes")
-          .on("postgres_changes", { event: "*", schema: "public", table: "journal" }, (payload) => {
-            logWithTimestamp("📡 Realtime notification received:", payload.eventType, payload);
-
-            const id = payload.new?.id || payload.old?.id;
-            if (!id) {
-              logWithTimestamp("⚠️ Realtime update without an ID:", payload);
-              return;
-            }
-            
-            // Ignore changes that are not for the current user
-            if (payload.new?.user_id !== USER_ID && payload.old?.user_id !== USER_ID) {
-                logWithTimestamp("Ignoring realtime update for another user.");
-                return;
-            }
-
-            if (payload.eventType === "DELETE") {
-              const nodeToRemove = gridApi.getRowNode(id);
-              if (nodeToRemove) {
-                gridApi.applyTransaction({ remove: [nodeToRemove.data] });
-                logWithTimestamp(`[realtime] 🗑️ Row deleted:`, nodeToRemove.data);
-              }
-            } else if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
-              // Check if the change originated from this client to avoid loops
-              const localNode = gridApi.getRowNode(id);
-              if (localNode && new Date(localNode.data.updated_at) >= new Date(payload.new.updated_at)) {
-                  logWithTimestamp("Ignoring stale or self-initiated update.");
-                  return;
-              }
-              logWithTimestamp(`[realtime] 🔄 Row inserted/updated.`);
-              updateRowInGrid(payload.new);
-            }
-          })
-          .subscribe((status, err) => {
-              if (status === 'SUBSCRIBED') {
-                  logWithTimestamp('✅ Successfully subscribed to real-time journal changes!');
-              } else {
-                  logWithTimestamp('❌ Failed to subscribe to real-time changes:', err);
-              }
-          });
       });
-    </script>
-</body>
-</html>
+  };
+  
+  // Start the initialization process
+  initializeGrid();
+
+</script>
