@@ -1,47 +1,42 @@
----
+.*---
 layout: default
 title: Journal
 ---
 
 <style>
- html, body {
-    height: 100%; /* Ensure html and body take full viewport height */
+  html, body {
+    height: 100%;
     margin: 0;
     padding: 0;
-    /* Removed overflow: hidden from html, body to prevent clipping */
   }
 
   body {
     display: flex;
     flex-direction: column;
-    min-height: 100vh; /* Ensure body always takes at least full viewport height */
   }
 
   h1 {
-    margin: 0; /* Remove default h1 margins */
-    padding: 1rem; /* Add padding for spacing */
-    width: 100%;
-    box-sizing: border-box; /* Include padding in width calculation */
+    margin: 1rem;
   }
 
   #journal-wrapper {
     display: flex;
     flex-direction: column;
-    flex-grow: 1; /* Allow wrapper to grow and fill remaining vertical space */
+    overflow: auto;
     max-width: 1200px;
     width: 100%;
+    height: 85vh;
     margin: 0 auto;
-    overflow-y: auto; /* Allows scrolling if content exceeds height */
-    padding-bottom: 20px; /* Add some padding at the bottom */
-    box-sizing: border-box;
   }
 
   #journal-table {
     width: 100%;
-    height: 100%; /* Fill available height within wrapper */
+    height: 100%;
+    overflow: auto;
   }
-
 </style>
+
+<h1 class="text-2xl font-bold mb-4">Journal</h1>
 
 <!-- AG Grid CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-grid.css" />
@@ -53,313 +48,210 @@ title: Journal
 <!-- AG Grid JS -->
 <script src="https://cdn.jsdelivr.net/npm/ag-grid-community@30.2.0/dist/ag-grid-community.min.js"></script>
 
-<!-- The main container for the AG Grid table -->
-<!-- Removed bg-white and shadow-lg from the container -->
-<h1 class="text-2xl font-bold mb-4">Journal</h1>
-
-<div id="journal-container">
-    <div id="journal-table" class="ag-theme-alpine"></div>
+<div id="journal-wrapper">
+  <div id="journal-table" class="ag-theme-alpine"></div>
 </div>
 
 <script>
   console.log("✅ Script started loading");
-
-  const tableEl = document.querySelector("#journal-table");
-
-  function logWithTimestamp(...args) {
-    const now = new Date().toISOString();
-    console.log(`[${now}]`, ...args);
-  }
-  
-  // --- Supabase and Grid Configuration ---
+  console.log("✅ agGrid present:", typeof agGrid !== "undefined");
+  console.log("✅ Supabase present:", typeof window.supabase !== "undefined");
 
   const supabaseUrl = "https://dibljhwqxxsvdwrzhchk.supabase.co";
   const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpYmxqaHdxeHhzdmR3cnpoY2hrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkyMzgwOTAsImV4cCI6MjA2NDgxNDA5MH0.qcbOKHlDjua_ijVa_3mvnfjbZCl1wROJDtZ4naeZZko";
   const { createClient } = window.supabase;
   const supabase = createClient(supabaseUrl, supabaseKey);
 
-  // A mock user ID. In a real app, this would come from an authentication system.
   const USER_ID = "00000000-0000-0000-0000-000000000000";
   const ACTIVITY_TYPES = ["Buy", "Sell", "Dividend", "Split", "Interest", "Fee", "Other"];
 
   let gridApi;
 
-  // AG Grid options
   const gridOptions = {
-    getRowId: params => params.data.id, // Unique ID for each row
+    getRowId: params => params.data.id,
     columnDefs: [
-      { field: "id", hide: true, editable: false }, // Hidden ID field
-      { field: "user_id", hide: true, editable: false }, // Hidden user_id field
+      { field: "id", hide: true, editable: false },
       {
         field: "activity_type",
-        headerName: "Activity Type",
         editable: true,
-        cellEditor: "agSelectCellEditor", // Dropdown editor
+        cellEditor: "agSelectCellEditor",
         cellEditorParams: { values: ACTIVITY_TYPES },
-        valueFormatter: params => params.value || "", // Display empty string if null
-        width: 150, // Fixed width for better layout
+        valueFormatter: params => params.value || "",
       },
-      { field: "symbol", headerName: "Symbol", editable: true, width: 100 },
-      {
-        field: "trade_date",
-        headerName: "Trade Date",
-        editable: true,
-        cellEditor: 'agDateCellEditor', // Date picker editor
-        valueFormatter: params => {
-            // Format date for display
-            if (params.value) {
-                const date = new Date(params.value);
-                return date.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' });
-            }
-            return '';
-        },
-        valueParser: params => {
-            // Parse date string back to ISO format for storage
-            if (params.newValue) {
-                const date = new Date(params.newValue);
-                return date.toISOString().split('T')[0]; // Store asYYYY-MM-DD
-            }
-            return null;
-        },
-        width: 140,
-      },
-      {
-        field: "quantity",
-        headerName: "Quantity",
-        editable: true,
-        valueParser: params => Number(params.newValue), // Corrected: changed string to function
-        cellClass: "ag-right-aligned-cell", // Align text to the right
-        width: 120,
-      },
-      {
-        field: "price",
-        headerName: "Price",
-        editable: true,
-        valueParser: params => Number(params.newValue), // Corrected: changed string to function
-        cellClass: "ag-right-aligned-cell",
-        valueFormatter: params => {
-            // Format as currency
-            return params.value != null ? `$${Number(params.value).toFixed(2)}` : '';
-        },
-        width: 120,
-      },
-      {
-        field: "fee",
-        headerName: "Fee",
-        editable: true,
-        valueParser: params => Number(params.newValue), // Corrected: changed string to function
-        cellClass: "ag-right-aligned-cell",
-        valueFormatter: params => {
-            // Format as currency
-            return params.value != null ? `$${Number(params.value).toFixed(2)}` : '';
-        },
-        width: 100,
-      },
-      { field: "note", headerName: "Note", editable: true, flex: 1, minWidth: 200 },
-      // Removed 'inserted_at' and 'updated_at' from columnDefs
+      { field: "symbol", editable: true },
+      { field: "trade_date", editable: true },
+      { field: "quantity", editable: true, valueParser: "number", cellClass: "ag-right-aligned-cell" },
+      { field: "price", editable: true, valueParser: "number", cellClass: "ag-right-aligned-cell" },
+      { field: "fee", editable: true, valueParser: "number", cellClass: "ag-right-aligned-cell" },
+      { field: "note", editable: true },
+      { field: "inserted_at", editable: false },
     ],
     defaultColDef: {
-      filter: true,      // Enable filtering on all columns by default
-      sortable: true,    // Enable sorting on all columns by default
-      resizable: true,   // Allow column resizing
-      flex: 1,           // Columns will grow/shrink to fill available space
-      minWidth: 120,     // Minimum width for columns
+      filter: true,
+      sortable: true,
+      resizable: true,
+      flex: 1,
+      minWidth: 100,
     },
-    pagination: false, // Disable pagination
-    animateRows: true, // Enable row animations
-    singleClickEdit: true, // Edit cell on single click
-    stopEditingWhenCellsLoseFocus: true, // Stop editing when cell loses focus
-    onGridReady: (params) => {
-      gridApi = params.api;
-
-      // Function to attempt sizing columns
-      const trySizeColumns = () => {
-        // Check if the grid's container has a width greater than 0
-        if (tableEl && tableEl.offsetWidth > 0) {
-          gridApi.sizeColumnsToFit();
-        } else {
-          // If not ready, try again on the next animation frame
-          requestAnimationFrame(trySizeColumns);
-        }
-      };
-
-      // Start the sizing attempt on the next animation frame
-      requestAnimationFrame(trySizeColumns);
-      
-      // Add event listener to resize columns on window resize
-      window.addEventListener('resize', () => {
-        if (gridApi && tableEl.offsetWidth > 0) { // Also check width on resize
-          gridApi.sizeColumnsToFit();
-        }
-      });
-      // Load initial data into the grid
-      loadData("initial");
-    },
+    pagination: false,
+    animateRows: true,
+    singleClickEdit: true,
+    stopEditingWhenCellsLoseFocus: true,
     onCellValueChanged: async (params) => {
-      const rowData = { ...params.data };
+      const rowData = params.data;
 
-      // Assign UUID if new row (no ID yet)
       if (!rowData.id) {
         rowData.id = crypto.randomUUID();
+        params.node.setDataValue("id", rowData.id);
       }
-      // Assign user ID if not present
+
       if (!rowData.user_id) {
         rowData.user_id = USER_ID;
+        params.node.setDataValue("user_id", USER_ID);
       }
-      // Removed logic for inserted_at and updated_at
-      
-      logWithTimestamp("⬆️ Upserting row to database:", rowData);
 
-      // Upsert data to Supabase (insert or update based on ID)
+      if (!rowData.inserted_at) {
+        rowData.inserted_at = new Date().toISOString();
+        params.node.setDataValue("inserted_at", rowData.inserted_at);
+      }
+
+      logWithTimestamp("⬆️ Update pushed to database:", rowData);
+
       const { error } = await supabase
         .from("journal")
         .upsert([rowData], { onConflict: "id" });
 
       if (error) {
         logWithTimestamp("❌ Supabase upsert error:", error.message);
-        // Display error to the user (e.g., a temporary message on the UI)
       } else {
         logWithTimestamp("✅ Row saved to Supabase successfully.");
-        // Re-fetch and update the row in the grid to reflect any server-side changes (e.g., default values)
-        fetchAndUpdateRowById(rowData.id, 'after-upsert');
       }
     },
     onRowDataUpdated: (params) => {
-        // Removed the logic that adds an empty row at the end
-        // if (rowCount === 0) {
-        //      gridApi.applyTransaction({ add: [{ user_id: USER_ID }] });
-        //      return;
-        // }
-        // const lastRowNode = gridApi.getDisplayedRowAtIndex(rowCount - 1);
-        // const lastRowData = lastRowNode.data;
-        // if (lastRowData && lastRowData.activity_type) {
-        //     gridApi.applyTransaction({ add: [{ user_id: USER_ID }] });
-        // }
+      const lastRow = gridApi.getDisplayedRowAtIndex(gridApi.getDisplayedRowCount() - 1);
+      if (!lastRow || !lastRow.data || !lastRow.data.user_id) {
+        gridApi.applyTransaction({ add: [{ user_id: USER_ID }] });
+      }
     },
   };
 
-  /**
-   * Updates an existing row or adds a new row in the AG Grid.
-   * @param {Object} updatedRow The row data to update or add.
-   */
-  function updateRowInGrid(updatedRow) {
-    if (!gridApi) return;
+  function logWithTimestamp(...args) {
+    const now = new Date().toISOString();
+    console.log(`[${now}]`, ...args);
+  }
+
+  async function updateRowInGrid(updatedRow) {
     const nodeToUpdate = gridApi.getRowNode(updatedRow.id);
     if (nodeToUpdate) {
-      // If row exists, update its data
       nodeToUpdate.setData(updatedRow);
+      logWithTimestamp("🔄 Updated row in grid:", updatedRow);
     } else {
-      // If row does not exist, add it
       gridApi.applyTransaction({ add: [updatedRow] });
+      logWithTimestamp("➕ Added new row to grid:", updatedRow);
     }
   }
 
-  /**
-   * Loads all journal entries for the current user from Supabase.
-   * @param {string} source Indicates the source of the data load (e.g., "initial", "manual").
-   */
   async function loadData(source = "manual") {
     if (!gridApi) {
-      logWithTimestamp("gridApi is not initialized.");
+      logWithTimestamp("gridApi is not initialized. Ensure grid is ready.");
       return;
     }
 
-    logWithTimestamp(`[${source}] ⏳ Loading data...`);
-    // Select all columns that exist in your Supabase table
     const { data, error } = await supabase
       .from("journal")
-      .select("id, user_id, activity_type, symbol, trade_date, quantity, price, fee, note") // Explicitly select existing columns
-      .eq("user_id", USER_ID) // Filter by user ID
-      .order("trade_date", { ascending: false, nullsFirst: false }); // Order by trade date
+      .select("*")
+      .eq("user_id", USER_ID)
+      .order("trade_date", { ascending: false });
 
     if (error) {
       logWithTimestamp(`[${source}] ❌ Supabase fetch error:`, error.message);
-      // Display error to the user
       return;
     }
 
-    logWithTimestamp(`[${source}] ⬇️ Received ${data.length} rows.`);
-    
-    // Set the fetched data to the grid
-    gridApi.setRowData(data);
-    // Removed the logic that adds an empty row after loading data
-    // gridApi.applyTransaction({ add: [{ user_id: USER_ID }] });
+    logWithTimestamp(`[${source}] ⬇️ Update received from database.`);
+    console.table(data);
+
+    for (const row of data) {
+      if (!row.id) continue;
+      updateRowInGrid(row);
+    }
   }
 
-  /**
-   * Fetches a single row by ID from Supabase and updates it in the grid.
-   * This is useful for ensuring the grid reflects the latest server-side state.
-   * @param {string} id The ID of the row to fetch.
-   * @param {string} source Indicates the source of the fetch (e.g., "after-upsert").
-   */
   async function fetchAndUpdateRowById(id, source = "manual") {
-    // Explicitly select only the columns that exist in your Supabase table
     const { data, error } = await supabase
       .from("journal")
-      .select("id, user_id, activity_type, symbol, trade_date, quantity, price, fee, note")
+      .select("*")
       .eq("id", id)
-      .single(); // Expect a single row
+      .single();
 
     if (error || !data) {
-      logWithTimestamp(`[${source}] ❌ Could not fetch row id=${id}:`, error?.message || "Not found");
+      logWithTimestamp(`[${source}] ❌ Could not fetch updated row with id=${id}:`, error?.message || "Unknown error");
       return;
     }
-    
+
+    logWithTimestamp(`[${source}] ⬇️ Fetched updated row data from database, applying to grid.`);
     updateRowInGrid(data);
   }
-  
-  // --- Initialization and Real-time Subscription ---
 
-  // Function to initialize AG Grid and Supabase real-time subscription
-  const initializeGrid = () => {
-    // Check if AG Grid library and the table element are ready
-    if (typeof agGrid === "undefined" || !document.querySelector("#journal-table")) {
-      logWithTimestamp("AG Grid or table element not ready, retrying...");
-      setTimeout(initializeGrid, 100); // Retry after 100ms
+  document.addEventListener("DOMContentLoaded", () => {
+    if (typeof agGrid === "undefined") {
+      logWithTimestamp("AG Grid is not loaded. Check the script URL.");
       return;
     }
-    
-    // Create a new AG Grid instance
-    new agGrid.Grid(document.querySelector("#journal-table"), gridOptions);
 
-    // Set up Supabase real-time subscription for 'journal' table changes
-    // This subscription will only receive changes for the columns that exist in the database
+    const gridDiv = document.querySelector("#journal-table");
+    new agGrid.Grid(gridDiv, gridOptions);
+    gridApi = gridOptions.api || gridDiv.gridOptions?.api;
+
+    // Wait for container to have size before sizing columns
+    function waitForGridToHaveSize() {
+      const width = gridDiv.offsetWidth;
+      const height = gridDiv.offsetHeight;
+      if (width > 0 && height > 0 && gridApi) {
+        gridApi.sizeColumnsToFit();
+        // Removed doLayout() because it doesn't exist in agGrid API and caused error
+        console.log("Grid initialized with size:", width, height);
+        loadData("initial");
+      } else {
+        console.log("Waiting for grid container size or gridApi...", width, height, !!gridApi);
+        setTimeout(waitForGridToHaveSize, 100);
+      }
+    }
+
+    waitForGridToHaveSize();
+
+    window.addEventListener("resize", () => {
+      if (gridApi) {
+        gridApi.sizeColumnsToFit();
+      }
+    });
+
     supabase
-      .channel("journal_changes") // Channel name
+      .channel("journal_changes")
       .on("postgres_changes", { event: "*", schema: "public", table: "journal" }, (payload) => {
-        // Log the event type and the new/old data for more detail
-        logWithTimestamp("📡 Realtime notification:", payload.eventType, payload.new || payload.old);
+        logWithTimestamp("📡 Realtime notification received from Supabase:", payload.eventType);
 
         const id = payload.new?.id || payload.old?.id;
-        if (!id) return; // Exit if no ID is present
-
-        // Filter out changes not related to the current user (important for multi-user scenarios)
-        if (payload.new?.user_id !== USER_ID && payload.old?.user_id !== USER_ID) {
-            return;
+        if (!id) {
+          logWithTimestamp("⚠️ Received realtime update but no id was found in payload:", payload);
+          return;
         }
 
         if (payload.eventType === "DELETE") {
-          // If a row is deleted, remove it from the grid
           const nodeToRemove = gridApi.getRowNode(id);
           if (nodeToRemove) {
             gridApi.applyTransaction({ remove: [nodeToRemove.data] });
+            logWithTimestamp(`[realtime] ⬇️ Row deleted from database, removed from grid:`, nodeToRemove.data);
+          } else {
+            logWithTimestamp(`[realtime] ⬇️ Row deleted but not found in grid: id=${id}`);
           }
-        } else if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
-          // If a row is inserted or updated, update/add it in the grid
+        } else if (payload.new) {
+          logWithTimestamp(`[realtime] ⬇️ Row updated in database, applying to grid.`);
           updateRowInGrid(payload.new);
+        } else {
+          fetchAndUpdateRowById(id, "realtime");
         }
       })
-      .subscribe((status, err) => {
-          // Log subscription status
-          if (status === 'SUBSCRIBED') {
-              logWithTimestamp('✅ Subscribed to real-time changes!');
-          } else {
-              logWithTimestamp('❌ Failed to subscribe:', err);
-          }
-      });
-  };
-  
-  // Start the initialization process when the window loads
-  window.onload = initializeGrid;
-
+      .subscribe();
+  });
 </script>
