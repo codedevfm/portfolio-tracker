@@ -67,6 +67,12 @@ title: Journal
 
   let gridApi;
 
+  const parseNumber = params => {
+    const value = params.newValue;
+    const parsed = Number(value);
+    return isNaN(parsed) ? null : parsed;
+  };
+  
   const gridOptions = {
     getRowId: params => params.data.id,
     columnDefs: [
@@ -80,9 +86,9 @@ title: Journal
       },
       { field: "symbol", editable: true },
       { field: "trade_date", editable: true },
-      { field: "quantity", editable: true, valueParser: "number", cellClass: "ag-right-aligned-cell" },
-      { field: "price", editable: true, valueParser: "number", cellClass: "ag-right-aligned-cell" },
-      { field: "fee", editable: true, valueParser: "number", cellClass: "ag-right-aligned-cell" },
+      { field: "quantity", editable: true, valueParser: parseNumber, cellClass: "ag-right-aligned-cell" },
+      { field: "price", editable: true, valueParser: parseNumber, cellClass: "ag-right-aligned-cell" },
+      { field: "fee", editable: true, valueParser: parseNumber, cellClass: "ag-right-aligned-cell" },
       { field: "note", editable: true },
       { field: "inserted_at", editable: false },
     ],
