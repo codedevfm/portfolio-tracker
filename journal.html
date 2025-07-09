@@ -22,17 +22,19 @@ title: Journal
   #journal-wrapper {
     display: flex;
     flex-direction: column;
-    overflow: auto;
+    flex-grow: 1; /* Allow wrapper to grow and fill remaining vertical space */
     max-width: 1200px;
     width: 100%;
-    height: 85vh;
+    /* height: 85vh; - Removed, flex-grow handles this better in a column layout */
     margin: 0 auto;
+    overflow-y: auto; /* Allows scrolling if content exceeds height */
+    padding-bottom: 20px; /* Add some padding at the bottom */
+    box-sizing: border-box;
   }
 
   #journal-table {
     width: 100%;
     height: 100%;
-    overflow: auto;
   }
 
   /* Custom styles for AG-Grid cells for better alignment */
