@@ -4,32 +4,35 @@ title: Journal
 ---
 
 <style>
-  /* This style block is designed to work within a Jekyll layout.
-     It makes the journal container fill the available vertical space.
-  */
-  #journal-container {
+  html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
     display: flex;
     flex-direction: column;
-    height: 85vh; /* Reverted to original height for visibility */
+  }
+
+  h1 {
+    margin: 1rem;
+  }
+
+  #journal-wrapper {
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+    max-width: 1200px;
     width: 100%;
-    /* max-width: 1200px; /* Reverted to original max-width */
-    margin: 0 auto; /* Reverted to original margin */
-    padding: 0 1rem 1rem 1rem;
-    /* Removed border-radius and overflow from container to avoid double borders */
-    /* border-radius: 0.5rem; */ 
-    /* overflow: hidden; */ 
+    height: 85vh;
+    margin: 0 auto;
   }
 
   #journal-table {
-    flex-grow: 1; /* Allows the grid to fill the container's height */
     width: 100%;
-    height: 100%; /* Explicitly set height to 100% of its flex parent */
-  }
-
-  /* Custom styles for AG-Grid to ensure rounded corners and better aesthetics */
-  .ag-theme-alpine {
-      border-radius: 0.5rem; /* Ensure the grid itself has rounded corners */
-      overflow: hidden; /* Ensure content respects rounded corners within the grid */
+    height: 100%;
+    overflow: auto;
   }
 
   /* Custom styles for AG-Grid cells for better alignment */
