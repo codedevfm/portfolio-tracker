@@ -84,6 +84,14 @@ title: Journal
   const gridOptions = {
     getRowId: params => params.data.id,
     columnDefs: [
+      { headerCheckboxSelection: true,
+        checkboxSelection: true,
+        suppressSizeToFit: true,
+        resizable: false, 
+        lockPosition: true, 
+        filter: false,
+        maxWidth: 52,
+      },
       { field: "id", hide: true, editable: false },
       {
         field: "activity_type",
@@ -111,6 +119,7 @@ title: Journal
     animateRows: true,
     singleClickEdit: true,
     stopEditingWhenCellsLoseFocus: true,
+    rowSelection: 'multiple', // or 'single'
     onCellValueChanged: async (params) => {
       const rowData = params.data;
 
