@@ -159,21 +159,31 @@ title: Journal
     },
   };
 
-  function logWithTimestamp(...args) {
-    const now = new Date().toISOString();
-    console.log(`[${now}]`, ...args);
+function logWithTimestamp(...args) {
+  const now = new Date().toISOString();
+  console.log(`[${now}]`, ...args);
+}
+
+async function updateRowInGrid(updatedRow) {
+  if (!updatedRow || !updatedRow.id) {
+    logWithTimestamp("⚠️ Invalid updatedRow or missing 'id':", updatedRow);
+    return;
   }
 
-  async function updateRowInGrid(updatedRow) {
-    const nodeToUpdate = gridApi.getRowNode(updatedRow.id);
-    if (nodeToUpdate) {
-      nodeToUpdate.setData(updatedRow);
-      logWithTimestamp("🔄 Updated row in grid:", updatedRow);
-    } else {
-      gridApi.applyTransaction({ add: [updatedRow] });
-      logWithTimestamp("➕ Added new row to grid:", updatedRow);
-    }
+  logWithTimestamp("🔍 Looking for row ID:", updatedRow.id);
+  const nodeToUpdate = gridApi.getRowNode(updatedRow.id);
+
+  if (nodeToUpdate) {
+    logWithTimestamp("✅ Found row node. Updating data...");
+    nodeToUpdate.setData(updatedRow);
+    logWithTimestamp("🔄 Updated row in grid:", updatedRow);
+  } else {
+    logWithTimestamp("🆕 Row not found. Adding to grid:", updatedRow);
+    const result = gridApi.applyTransaction({ add: [updatedRow] });
+    logWithTimestamp("📥 Add transaction result:", result);
   }
+}
+
 
   async function loadData(source = "manual") {
     if (!gridApi) {
