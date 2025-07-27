@@ -139,6 +139,21 @@ title: Journal
         params.node.setDataValue("inserted_at", rowData.inserted_at);
       }
 
+      // **Fix trade_date format:**
+      if (rowData.trade_date) {
+        // Try to parse trade_date and reformat as YYYY-MM-DD
+        const parsedDate = new Date(rowData.trade_date);
+        if (!isNaN(parsedDate)) {
+          const dateOnly = parsedDate.toISOString().split("T")[0];
+          if (rowData.trade_date !== dateOnly) {
+            rowData.trade_date = dateOnly;
+            params.node.setDataValue("trade_date", dateOnly);
+          }
+        } else {
+          console.warn("Invalid trade_date format, cannot parse:", rowData.trade_date);
+        }
+      }
+
       logWithTimestamp("⬆️ Update pushed to database:", rowData);
 
       const { error } = await supabase
