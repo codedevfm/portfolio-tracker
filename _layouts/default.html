@@ -7,47 +7,114 @@
   <!-- Ensure Supabase JS is loaded before it's used -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+  <style>
+    /* Moved from navbar.html's style block */
+    .nav-link.active {
+      color: #2563EB; /* Tailwind blue-600 */
+      font-weight: 600;
+      border-bottom: 2px solid #2563EB;
+    }
+    /* Styles for initial content hiding and loading spinner */
+    .main-content-hidden {
+      display: none;
+    }
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(255, 255, 255, 0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .spinner {
+      border: 4px solid rgba(0, 0, 0, 0.1);
+      border-left-color: #2563EB; /* Tailwind blue-600 */
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body class="pt-16 bg-gray-100 text-gray-900">
+  <!-- Loading Overlay - visible by default -->
+  <div id="loading-overlay" class="loading-overlay">
+    <div class="spinner"></div>
+  </div>
+
+  {% include navbar.html %}
+  <main id="main-content" class="w-full max-w-none p-6 main-content-hidden">
+    {{ content }}
+  </main>
+
   <script>
     const SUPABASE_URL = 'https://dibljhwqxxsvdwrzhchk.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpYmxqaHdxeHhzdmR3cnpoY2hrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkyMzgwOTAsImV4cCI6MjA2NDgxNDA5MH0.qcbOKHlDjua_ijVa_3mvnfjbZCl1wROJDtZ4naeZZko';
 
-    // Corrected Supabase client initialization:
-    // Access the 'createClient' method from the globally available 'supabase' object
-    // and assign it to a new constant 'supabaseClient' for consistency.
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // Redirect to login page if not authenticated (except on login page)
-    supabaseClient.auth.getSession().then(({ data: { session } }) => {
-      // Check if the current path is the login page to prevent infinite redirects
-      const currentPath = window.location.pathname;
-      // Updated loginPath to include the base directory for GitHub Pages
-      const loginPath = "/portfolio-tracker/login.html";
+    const loadingOverlay = document.getElementById('loading-overlay');
+    const mainContent = document.getElementById('main-content');
+    const loginPath = "/portfolio-tracker/login.html";
+    const currentPath = window.location.pathname;
 
-      if (!session && !currentPath.includes(loginPath)) {
+    // Perform authentication check
+    supabaseClient.auth.getSession().then(({ data: { session } }) => {
+      if (!session) {
+        // If not authenticated and not on the login page, redirect
+        if (!currentPath.includes(loginPath)) {
+          window.location.href = loginPath;
+        } else {
+          // If on login page and not authenticated, hide loading and show content
+          loadingOverlay.style.display = 'none';
+          mainContent.classList.remove('main-content-hidden');
+        }
+      } else {
+        // If authenticated, hide loading and show content
+        loadingOverlay.style.display = 'none';
+        mainContent.classList.remove('main-content-hidden');
+      }
+    }).catch(error => {
+      console.error("Error during session check:", error);
+      // In case of an error, still hide loading and show content (or redirect to login)
+      loadingOverlay.style.display = 'none';
+      if (!currentPath.includes(loginPath)) {
         window.location.href = loginPath;
+      } else {
+        mainContent.classList.remove('main-content-hidden');
       }
     });
 
     // Logout function
     async function handleLogout() {
       await supabaseClient.auth.signOut();
-      // Updated redirect URL for logout
-      window.location.href = "/portfolio-tracker/login.html";
+      window.location.href = loginPath;
     }
 
-    // Attach logout event handler after DOM loads
+    // Attach logout event handler and navbar active class after DOM loads
     document.addEventListener('DOMContentLoaded', () => {
       const logoutButton = document.getElementById('logout-button');
       if (logoutButton) {
         logoutButton.addEventListener('click', handleLogout);
       }
+
+      // Mark current page active in navbar
+      const current = window.location.pathname.split("/").pop();
+      document.querySelectorAll(".nav-link").forEach(link => {
+        const href = link.getAttribute("href").split("/").pop();
+        if (href === current || (href === "index.html" && current === "")) {
+          link.classList.add("active");
+        }
+      });
     });
   </script>
-</head>
-<body class="pt-16 bg-gray-100 text-gray-900">
-  {% include navbar.html %}
-  <main class="w-full max-w-none p-6">
-    {{ content }}
-  </main>
 </body>
 </html>
