@@ -66,32 +66,37 @@
     const loginPath = "/portfolio-tracker/login.html";
     const currentPath = window.location.pathname;
 
+    // Function to show content and hide loading overlay
+    function showContent() {
+      loadingOverlay.style.display = 'none';
+      mainContent.classList.remove('main-content-hidden');
+    }
+
     // Perform authentication check
-    supabaseClient.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
-        // If not authenticated and not on the login page, redirect
+    supabaseClient.auth.getSession()
+      .then(({ data: { session } }) => {
+        if (!session) {
+          // If not authenticated and not on the login page, redirect immediately
+          if (!currentPath.includes(loginPath)) {
+            window.location.href = loginPath;
+          } else {
+            // If on login page and not authenticated, show content
+            showContent();
+          }
+        } else {
+          // If authenticated, show content
+          showContent();
+        }
+      })
+      .catch(error => {
+        console.error("Error during session check:", error);
+        // In case of an error, redirect to login or show content if on login page
         if (!currentPath.includes(loginPath)) {
           window.location.href = loginPath;
         } else {
-          // If on login page and not authenticated, hide loading and show content
-          loadingOverlay.style.display = 'none';
-          mainContent.classList.remove('main-content-hidden');
+          showContent();
         }
-      } else {
-        // If authenticated, hide loading and show content
-        loadingOverlay.style.display = 'none';
-        mainContent.classList.remove('main-content-hidden');
-      }
-    }).catch(error => {
-      console.error("Error during session check:", error);
-      // In case of an error, still hide loading and show content (or redirect to login)
-      loadingOverlay.style.display = 'none';
-      if (!currentPath.includes(loginPath)) {
-        window.location.href = loginPath;
-      } else {
-        mainContent.classList.remove('main-content-hidden');
-      }
-    });
+      });
 
     // Logout function
     async function handleLogout() {
