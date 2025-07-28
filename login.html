@@ -1,41 +1,137 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Login</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Portfolio Tracker</title>
+  <!-- Google Fonts - Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <!-- Supabase JS -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    /* Apply Inter font globally */
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+  </style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center h-screen">
-
-  <div class="bg-white p-8 rounded shadow-md w-full max-w-md">
-    <h1 class="text-2xl font-bold mb-4">Login</h1>
-    <form id="login-form" class="space-y-4">
-      <input id="email" type="email" placeholder="Email" class="w-full p-2 border rounded" required />
-      <input id="password" type="password" placeholder="Password" class="w-full p-2 border rounded" required />
-      <button type="submit" class="w-full bg-blue-500 text-white p-2 rounded">Login</button>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+  <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-md border border-gray-200">
+    <h1 class="text-3xl font-bold mb-6 text-center text-gray-800">Login to Portfolio Tracker</h1>
+    <form id="login-form" class="space-y-5">
+      <div>
+        <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+        <input id="email" type="email" placeholder="your.email@example.com"
+               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out" required />
+      </div>
+      <div class="relative">
+        <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+        <input id="password" type="password" placeholder="••••••••"
+               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 pr-10 transition duration-150 ease-in-out" required />
+        <button type="button" id="togglePassword" class="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5 mt-6">
+          <svg class="h-5 w-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path id="eye-open" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            <path id="eye-closed" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+          </svg>
+        </button>
+      </div>
+      <button type="submit" id="login-button"
+              class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold p-3 rounded-lg shadow-md transition duration-200 ease-in-out
+                     flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed">
+        <span id="button-text">Login</span>
+        <svg id="spinner" class="animate-spin h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+      </button>
     </form>
-    <p id="error" class="text-red-500 mt-2 hidden"></p>
+    <p id="error" class="text-red-600 text-sm mt-4 text-center hidden"></p>
   </div>
 
   <script>
-    const supabase = supabase.createClient(
+    // Initialize Supabase client
+    // Changed 'supabase' to 'supabaseClient' to avoid ReferenceError
+    const supabaseClient = supabase.createClient(
       'https://dibljhwqxxsvdwrzhchk.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpYmxqaHdxeHhzdmR3cnpoY2hrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkyMzgwOTAsImV4cCI6MjA2NDgxNDA5MH0.qcbOKHlDjua_ijVa_3mvnfjbZCl1wROJDtZ4naeZZko'
     );
 
-    document.getElementById('login-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
+    // Debug: Confirm Supabase client is initialized
+    console.log('Supabase client initialized:', supabaseClient);
 
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const loginForm = document.getElementById('login-form');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const errorDiv = document.getElementById('error');
+    const loginButton = document.getElementById('login-button');
+    const buttonText = document.getElementById('button-text');
+    const spinner = document.getElementById('spinner');
+    const togglePasswordButton = document.getElementById('togglePassword');
+    const eyeOpenIcon = document.getElementById('eye-open');
+    const eyeClosedIcon = document.getElementById('eye-closed');
 
-      if (error) {
-        document.getElementById('error').textContent = error.message;
-        document.getElementById('error').classList.remove('hidden');
+    // Function to show loading state
+    function showLoading(isLoading) {
+      loginButton.disabled = isLoading;
+      if (isLoading) {
+        buttonText.textContent = 'Logging in...';
+        spinner.classList.remove('hidden');
       } else {
-        window.location.href = '/'; // Redirect to homepage or dashboard
+        buttonText.textContent = 'Login';
+        spinner.classList.add('hidden');
+      }
+    }
+
+    // Toggle password visibility
+    togglePasswordButton.addEventListener('click', () => {
+      const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+      passwordInput.setAttribute('type', type);
+      // Toggle eye icons
+      if (type === 'password') {
+        eyeOpenIcon.style.display = 'block';
+        eyeClosedIcon.style.display = 'none';
+      } else {
+        eyeOpenIcon.style.display = 'none';
+        eyeClosedIcon.style.display = 'block';
+      }
+    });
+
+    // Initial state for eye icons
+    eyeClosedIcon.style.display = 'none'; // Hide closed eye initially
+
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorDiv.classList.add('hidden'); // Hide previous errors
+      errorDiv.textContent = ''; // Clear previous error text
+
+      const email = emailInput.value;
+      const password = passwordInput.value;
+
+      showLoading(true); // Show loading state
+
+      try {
+        console.log('Attempting login with email:', email);
+        // Use supabaseClient instead of supabase
+        const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+
+        if (error) {
+          console.error('Login error:', error.message);
+          errorDiv.textContent = `Error: ${error.message}`;
+          errorDiv.classList.remove('hidden');
+          return;
+        }
+
+        console.log('Login successful, session:', data.session);
+        // Redirect to index.html on successful login
+        window.location.href = '/index.html';
+      } catch (err) {
+        console.error('Unexpected error during login:', err);
+        errorDiv.textContent = 'An unexpected error occurred. Please try again.';
+        errorDiv.classList.remove('hidden');
+      } finally {
+        showLoading(false); // Hide loading state
       }
     });
   </script>
