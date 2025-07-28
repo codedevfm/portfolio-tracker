@@ -33,9 +33,19 @@
                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 pr-10 transition duration-150 ease-in-out"
                autocomplete="current-password" required />
         <button type="button" id="togglePassword" class="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5 mt-6">
-          <svg class="h-5 w-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path id="eye-open" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-            <path id="eye-closed" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+          <!-- Icon for when password is HIDDEN (slashed eye) -->
+          <svg id="icon-eye-hidden" class="h-5 w-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <!-- Path for the eye shape (from previous "good" eye) -->
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+            <!-- Path for the slash -->
+            <line x1="4" y1="20" x2="20" y2="4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <!-- Icon for when password is VISIBLE (open eye) -->
+          <svg id="icon-eye-visible" class="h-5 w-5 text-gray-500 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <!-- Path for the eye shape (from previous "good" eye) -->
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
           </svg>
         </button>
       </div>
@@ -70,8 +80,9 @@
     const buttonText = document.getElementById('button-text');
     const spinner = document.getElementById('spinner');
     const togglePasswordButton = document.getElementById('togglePassword');
-    const eyeOpenIcon = document.getElementById('eye-open');
-    const eyeClosedIcon = document.getElementById('eye-closed');
+    // Get references to the new SVG elements
+    const iconEyeVisible = document.getElementById('icon-eye-visible');
+    const iconEyeHidden = document.getElementById('icon-eye-hidden');
 
     // Function to show loading state
     function showLoading(isLoading) {
@@ -89,18 +100,20 @@
     togglePasswordButton.addEventListener('click', () => {
       const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
       passwordInput.setAttribute('type', type);
-      // Toggle eye icons
+
+      // Toggle visibility of the appropriate SVG icon
       if (type === 'password') {
-        eyeOpenIcon.style.display = 'block';
-        eyeClosedIcon.style.display = 'none';
+        iconEyeHidden.classList.remove('hidden'); // Show slashed eye
+        iconEyeVisible.classList.add('hidden');    // Hide open eye
       } else {
-        eyeOpenIcon.style.display = 'none';
-        eyeClosedIcon.style.display = 'block';
+        iconEyeHidden.classList.add('hidden');     // Hide slashed eye
+        iconEyeVisible.classList.remove('hidden'); // Show open eye
       }
     });
 
-    // Initial state for eye icons
-    eyeClosedIcon.style.display = 'none'; // Hide closed eye initially
+    // Initial state setup: Password input starts as type="password", so show the hidden eye icon
+    iconEyeHidden.classList.remove('hidden');
+    iconEyeVisible.classList.add('hidden');
 
     loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -124,8 +137,8 @@
         }
 
         console.log('Login successful, session:', data.session);
-        // Redirect to index.html on successful login
-        window.location.href = '/index.html';
+        // Redirect to the correct portfolio-tracker path on successful login
+        window.location.href = '/portfolio-tracker/';
       } catch (err) {
         console.error('Unexpected error during login:', err);
         errorDiv.textContent = 'An unexpected error occurred. Please try again.';
