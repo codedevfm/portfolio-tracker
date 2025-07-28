@@ -4,24 +4,35 @@
   <meta charset="UTF-8" />
   <title>{{ page.title }}</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <!-- Ensure Supabase JS is loaded before it's used -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <script>
     const SUPABASE_URL = 'https://dibljhwqxxsvdwrzhchk.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpYmxqaHdxeHhzdmR3cnpoY2hrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkyMzgwOTAsImV4cCI6MjA2NDgxNDA5MH0.qcbOKHlDjua_ijVa_3mvnfjbZCl1wROJDtZ4naeZZko';
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // Corrected Supabase client initialization:
+    // Access the 'createClient' method from the globally available 'supabase' object
+    // and assign it to a new constant 'supabaseClient' for consistency.
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     // Redirect to login page if not authenticated (except on login page)
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session && window.location.pathname !== "/login.html") {
-        window.location.href = "/login.html";
+    supabaseClient.auth.getSession().then(({ data: { session } }) => {
+      // Check if the current path is the login page to prevent infinite redirects
+      const currentPath = window.location.pathname;
+      // Updated loginPath to include the base directory for GitHub Pages
+      const loginPath = "/portfolio-tracker/login.html";
+
+      if (!session && !currentPath.includes(loginPath)) {
+        window.location.href = loginPath;
       }
     });
 
     // Logout function
     async function handleLogout() {
-      await supabase.auth.signOut();
-      window.location.href = "/login.html";
+      await supabaseClient.auth.signOut();
+      // Updated redirect URL for logout
+      window.location.href = "/portfolio-tracker/login.html";
     }
 
     // Attach logout event handler after DOM loads
