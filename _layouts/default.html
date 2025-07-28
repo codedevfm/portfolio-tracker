@@ -67,36 +67,37 @@
     const currentPath = window.location.pathname;
 
     // Function to show content and hide loading overlay
-    function showContent() {
-      loadingOverlay.style.display = 'none';
-      mainContent.classList.remove('main-content-hidden');
+    function showPageContent() {
+      // Use a setTimeout with 0ms to ensure this runs after all synchronous DOM rendering
+      // and event queue processing for initial page load. This helps prevent content flicker.
+      setTimeout(() => {
+        loadingOverlay.style.display = 'none';
+        mainContent.classList.remove('main-content-hidden');
+      }, 0);
     }
 
-    // Perform authentication check
-    supabaseClient.auth.getSession()
-      .then(({ data: { session } }) => {
-        if (!session) {
-          // If not authenticated and not on the login page, redirect immediately
-          if (!currentPath.includes(loginPath)) {
+    // Logic for handling page display based on authentication status
+    if (currentPath.includes(loginPath)) {
+      // If on the login page, show content immediately (no auth check needed to display login form)
+      showPageContent();
+    } else {
+      // For all other pages, perform authentication check
+      supabaseClient.auth.getSession()
+        .then(({ data: { session } }) => {
+          if (!session) {
+            // Not authenticated, redirect to login
             window.location.href = loginPath;
           } else {
-            // If on login page and not authenticated, show content
-            showContent();
+            // Authenticated, show content
+            showPageContent();
           }
-        } else {
-          // If authenticated, show content
-          showContent();
-        }
-      })
-      .catch(error => {
-        console.error("Error during session check:", error);
-        // In case of an error, redirect to login or show content if on login page
-        if (!currentPath.includes(loginPath)) {
+        })
+        .catch(error => {
+          console.error("Error during session check:", error);
+          // In case of an error during session check, redirect to login
           window.location.href = loginPath;
-        } else {
-          showContent();
-        }
-      });
+        });
+    }
 
     // Logout function
     async function handleLogout() {
@@ -105,6 +106,8 @@
     }
 
     // Attach logout event handler and navbar active class after DOM loads
+    // This part can remain in DOMContentLoaded as it doesn't control initial page visibility,
+    // only interactions after the page is potentially shown.
     document.addEventListener('DOMContentLoaded', () => {
       const logoutButton = document.getElementById('logout-button');
       if (logoutButton) {
