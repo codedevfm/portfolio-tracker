@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Login</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center h-screen">
+
+  <div class="bg-white p-8 rounded shadow-md w-full max-w-md">
+    <h1 class="text-2xl font-bold mb-4">Login</h1>
+    <form id="login-form" class="space-y-4">
+      <input id="email" type="email" placeholder="Email" class="w-full p-2 border rounded" required />
+      <input id="password" type="password" placeholder="Password" class="w-full p-2 border rounded" required />
+      <button type="submit" class="w-full bg-blue-500 text-white p-2 rounded">Login</button>
+    </form>
+    <p id="error" class="text-red-500 mt-2 hidden"></p>
+  </div>
+
+  <script>
+    const supabase = supabase.createClient(
+      'https://dibljhwqxxsvdwrzhchk.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpYmxqaHdxeHhzdmR3cnpoY2hrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkyMzgwOTAsImV4cCI6MjA2NDgxNDA5MH0.qcbOKHlDjua_ijVa_3mvnfjbZCl1wROJDtZ4naeZZko'
+    );
+
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+      if (error) {
+        document.getElementById('error').textContent = error.message;
+        document.getElementById('error').classList.remove('hidden');
+      } else {
+        window.location.href = '/'; // Redirect to homepage or dashboard
+      }
+    });
+  </script>
+</body>
+</html>

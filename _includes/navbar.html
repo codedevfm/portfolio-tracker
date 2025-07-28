@@ -1,12 +1,16 @@
 <nav class="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-sm">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex justify-between h-16 items-center">
+      <!-- Left navigation links -->
       <div class="flex space-x-8">
         <a href="{{ site.baseurl }}/" class="nav-link text-gray-500 hover:text-blue-600 text-sm font-medium">Dashboard</a>
         <a href="{{ site.baseurl }}/journal.html" class="nav-link text-gray-500 hover:text-blue-600 text-sm font-medium">Journal</a>
         <a href="{{ site.baseurl }}/performance.html" class="nav-link text-gray-500 hover:text-blue-600 text-sm font-medium">Performance</a>
       </div>
-      <!-- Optional: Logo or toggle here -->
+      <!-- Right-side logout -->
+      <div>
+        <button id="logout-button" class="text-sm text-red-600 hover:text-red-800 font-medium">Logout</button>
+      </div>
     </div>
   </div>
 </nav>
@@ -20,12 +24,27 @@
 </style>
 
 <script>
-  // Add 'active' class to the matching nav item
+  // Mark current page active in navbar
   const current = window.location.pathname.split("/").pop();
   document.querySelectorAll(".nav-link").forEach(link => {
     const href = link.getAttribute("href").split("/").pop();
     if (href === current || (href === "index.html" && current === "")) {
       link.classList.add("active");
+    }
+  });
+
+  // Logout handler
+  document.addEventListener("DOMContentLoaded", () => {
+    const logoutButton = document.getElementById("logout-button");
+    if (logoutButton) {
+      logoutButton.addEventListener("click", async () => {
+        if (typeof supabase !== 'undefined') {
+          await supabase.auth.signOut();
+          window.location.href = "/login.html";
+        } else {
+          console.error("Supabase is not loaded.");
+        }
+      });
     }
   });
 </script>

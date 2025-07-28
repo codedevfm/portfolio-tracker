@@ -4,6 +4,34 @@
   <meta charset="UTF-8" />
   <title>{{ page.title }}</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+  <script>
+    const SUPABASE_URL = 'https://dibljhwqxxsvdwrzhchk.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpYmxqaHdxeHhzdmR3cnpoY2hrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkyMzgwOTAsImV4cCI6MjA2NDgxNDA5MH0.qcbOKHlDjua_ijVa_3mvnfjbZCl1wROJDtZ4naeZZko';
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // Redirect to login page if not authenticated (except on login page)
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session && window.location.pathname !== "/login.html") {
+        window.location.href = "/login.html";
+      }
+    });
+
+    // Logout function
+    async function handleLogout() {
+      await supabase.auth.signOut();
+      window.location.href = "/login.html";
+    }
+
+    // Attach logout event handler after DOM loads
+    document.addEventListener('DOMContentLoaded', () => {
+      const logoutButton = document.getElementById('logout-button');
+      if (logoutButton) {
+        logoutButton.addEventListener('click', handleLogout);
+      }
+    });
+  </script>
 </head>
 <body class="pt-16 bg-gray-100 text-gray-900">
   {% include navbar.html %}
