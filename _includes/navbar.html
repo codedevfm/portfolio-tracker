@@ -40,7 +40,7 @@
       logoutButton.addEventListener("click", async () => {
         if (typeof supabase !== 'undefined') {
           await supabase.auth.signOut();
-          window.location.href = "/login.html";
+          window.location.href = "/portfolio-tracker/login.html";
         } else {
           console.error("Supabase is not loaded.");
         }
