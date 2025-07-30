@@ -6,24 +6,14 @@ This file lists the ongoing tasks for this repository. Check items off as they a
 
 ## Core Features
 
-* [x] **Dashboard:** Make the dashboard the default homepage.  <-- This item is now checked off
-    * [x] Implement necessary routing changes.
-    * [ ] Verify all links and navigations.
-* [ ] **Tabulator Functionality:** Integrate tabulator for enhanced data display.
-    * [ ] Identify specific tables for tabulator implementation.
-    * [ ] Configure sorting and filtering options.
-    * [ ] Test data loading and rendering.
-* [ ] **Performance Screen:** Add a dedicated screen for performance metrics.
-    * [ ] Define key performance indicators (KPIs) to display.
-    * [ ] Develop data retrieval methods for performance data.
-    * [ ] Design the user interface for readability.
+* [x] **Dashboard:**
+    * [ ] determine the most important performance metrics, like most recent trades, other metrics and display them
+* [ ] **Journal Functionality:**
+    * [ ] add row functionality
+    * [ ] select and delete row functionality
+* [ ] **Performance Screen:**
+    * [ ] create portfoloio-value-by-day table
+    * [ ] plot portfolio-value-by-day in performance
 
-## Future Enhancements (Ideas)
-
-* [ ] Implement user authentication.
-* [ ] Add data export options (CSV, PDF).
-* [ ] Improve mobile responsiveness.
-
----
 
 **Last Updated:** 2025-07-30
